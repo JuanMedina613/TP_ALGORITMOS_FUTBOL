@@ -10,7 +10,7 @@
 #include <ctype.h>
 
 
-///ESTRUCTURAS///
+///ESTRUCTURAS/// -> ESTA A ELECCION MODIFICAR PARA QUE QUEDEN MEJOR LOS DATOS DE LAS ESTRUCTURAS
 typedef struct{
     int dia,mes,anio;
 }t_fecha;

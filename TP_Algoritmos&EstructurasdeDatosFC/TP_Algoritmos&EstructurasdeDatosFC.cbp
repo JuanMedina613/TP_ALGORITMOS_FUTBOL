@@ -31,6 +31,18 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="Bibliotecas/Funciones.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Bibliotecas/Funciones.h" />
+		<Unit filename="Bibliotecas/Indice.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Bibliotecas/Indice.h" />
+		<Unit filename="Bibliotecas/TDA_Arbol.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Bibliotecas/TDA_Arbol.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
