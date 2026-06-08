@@ -1,0 +1,28 @@
+# depslib dependency file v1.0
+1780893319 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.c
+	"Funciones.h"
+
+1780893319 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.h
+	"TDA_Arbol.h"
+	"Indice.h"
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<ctype.h>
+
+1780882060 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\tda_arbol.h
+
+1780889223 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\indice.h
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+
+1780882060 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\tda_arbol.c
+	"TDA_Arbol.h"
+
+1780893319 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\main.c
+	"Bibliotecas/Funciones.h"
+
+1780889186 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\indice.c
+	"Indice.h"
+
