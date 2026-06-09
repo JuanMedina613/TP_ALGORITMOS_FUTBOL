@@ -4,14 +4,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "TDA_Arbol.h"
 
 #define TODO_OK 1
 #define TODO_MAL 0
 
 
-typedef struct{
+/*typedef struct{
     void* clave;
     unsigned nro_reg;
+}t_entrada_indice;*/
+
+typedef struct{// a mirar, pero es lo que dice el Enunciado
+    tArbol arbol;
+    unsigned tamClave;
+    int (*cmp)(const void*,const void*);
 }t_indice;
 
 
