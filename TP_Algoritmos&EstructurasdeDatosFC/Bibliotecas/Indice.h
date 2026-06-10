@@ -18,7 +18,7 @@
 typedef struct{// a mirar, pero es lo que dice el Enunciado
     tArbol arbol;
     unsigned tamClave;
-    int (*cmp)(const void*,const void*);
+    int(*cmp)(const void*,const void*);
 }t_indice;
 
 

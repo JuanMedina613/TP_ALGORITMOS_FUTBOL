@@ -9,7 +9,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-
+#define TODO_MAL 0
+#define TODO_OK 1
+#define TAM_LINEA 256
 ///ESTRUCTURAS/// -> ESTA A ELECCION MODIFICAR PARA QUE QUEDEN MEJOR LOS DATOS DE LAS ESTRUCTURAS
 typedef struct{
     int dia,mes,anio;
@@ -28,4 +30,5 @@ typedef struct{
 }t_socio;
 
 char SeleccionarMenu();
+int CargarSocios(const char* path);
 #endif // FUNCIONES_H_INCLUDED
