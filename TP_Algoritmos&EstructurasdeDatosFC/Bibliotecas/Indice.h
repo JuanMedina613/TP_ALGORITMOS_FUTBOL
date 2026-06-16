@@ -10,12 +10,12 @@
 #define TODO_MAL 0
 
 
-/*typedef struct{
+typedef struct{
     void* clave;
     unsigned nro_reg;
-}t_entrada_indice;*/
+}t_entrada_indice;
 
-typedef struct{// a mirar, pero es lo que dice el Enunciado
+typedef struct{
     tArbol arbol;
     unsigned tamClave;
     int(*cmp)(const void*,const void*);
@@ -30,4 +30,7 @@ int ind_cargar(t_indice* ind, const char* path);
 int ind_grabar(const t_indice* ind, const char* path);
 void ind_vaciar(t_indice* ind);
 int ind_recorrer(const t_indice* ind, void (*accion)(const void *, unsigned, void *), void* param);
+
+///FUNCIONES VARIAS -> SE PODRIA CREAR OTRO LUGAR PARA PONERLAS
+void AccionGrabar(void* info, unsigned tam, unsigned n, void* params);
 #endif // INDICE_H_INCLUDED

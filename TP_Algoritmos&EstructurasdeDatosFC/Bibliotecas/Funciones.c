@@ -6,6 +6,7 @@ char SeleccionarMenu()
     char opciones[]= "ABMLCS";
     do
     {
+        printf("\n ================ MENU ================");
         printf("\n [A] Alta a un Socio.");
         printf("\n [B] Baja a un Socio.");
         printf("\n [M] Modificar Socio.");
