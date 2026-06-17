@@ -8,6 +8,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <time.h>
+
 
 #define TODO_MAL 0
 #define TODO_OK 1
@@ -17,7 +19,7 @@ typedef struct{
     int dia,mes,anio;
 }t_fecha;
 typedef struct{
-    int DNI;
+    unsigned DNI;
     char apellidos[60];
     char nombres[60];
     t_fecha fecha_nacimiento;
@@ -31,4 +33,20 @@ typedef struct{
 
 char SeleccionarMenu();
 int CargarSocios(const char* path);
+
+///FUNCIONE DEL MENU
+int AltaSocio(t_indice* ind,FILE* pf, int(*cmp)(const void*, const void*));
+
+void pedirDNI(const tArbol* p,unsigned* dni,FILE* pf, int(*cmp)(const void*, const void*));
+void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max);
+void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* nacimiento);
+void pedirSexo(char* sexo);
+void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* hoy);
+void obtenerFechaActual(t_fecha* hoy);
+int calcularEdad(const t_fecha* nacimiento, const t_fecha* hoy);
+///VALIDACIONES
+
+int validarRango(int lim1, int lim2);
+int esFechaMenor(const t_fecha* f1, const t_fecha* f2);
+int CmpDNI(const void* a, const void* b);
 #endif // FUNCIONES_H_INCLUDED

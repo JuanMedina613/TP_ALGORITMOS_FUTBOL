@@ -60,6 +60,7 @@ unsigned leerDesdeArchivoBin(void** d, void* pf, unsigned pos, void* params)
     fseek((FILE*)pf, pos*tam, SEEK_SET);
     return fread(*d, tam, 1, (FILE*)pf);
 }
+//****************************************************************************************************//
 void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*))
 {
     if(!*p)
@@ -68,4 +69,18 @@ void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)
     Accion((*p)->info, (*p)->tamInfo, n, params);
     recorrerEnOrdenArbol(&(*p)->der, n+1, params, Accion);
 
+}
+//****************************************************************************************************//
+tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*))
+{
+    int rc;
+    if(!*p)
+        return NULL;
+    if(*p && (rc = cmp(pd, (*p)->info)))
+    {
+        if(rc<0)
+            return buscarNodoArbol(&(*p)->izq,pd,cmp);
+        return buscarNodoArbol(&(*p)->der,pd,cmp);
+    }
+    return (tNodoArbol**)p;
 }

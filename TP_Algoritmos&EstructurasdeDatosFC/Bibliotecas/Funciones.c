@@ -16,7 +16,7 @@ char SeleccionarMenu()
         printf("\n Seleccione una Opcion: ");
 
         scanf(" %c",&decision);//-> el espacion entes del % limpia el buffer no quitar
-                               //-> tampoco usar el fflush(stdin) ya que no anda bien
+        //-> tampoco usar el fflush(stdin) ya que no anda bien
         decision = toupper(decision);
         if(strchr(opciones,decision) == NULL)
         {
@@ -24,7 +24,8 @@ char SeleccionarMenu()
             system("pause");
             system("cls");
         }
-    }while(strchr(opciones,decision) == NULL);
+    }
+    while(strchr(opciones,decision) == NULL);
     return decision;
 }
 ///***********************************************************************************************//
@@ -58,24 +59,24 @@ int CargarSocios(const char* path)
     {
 
         sscanf(linea,
-            "%d,%59[^,],%59[^,],"       // DNI, apellidos, nombres
-            "%d/%d/%d,"                  // fecha_nacimiento
-            "%c,"                        // sexo
-            "%d/%d/%d,"                  // fecha_afiliacion
-            "%9[^,],"                    // categoria
-            "%d/%d/%d,"                  // fecha_ultima_cuota
-            "%c,"                        // estado
-            "%10[^\n]",                  // fecha_baja (puede ser vacío)
-            &socio.DNI,
-            socio.apellidos,
-            socio.nombres,
-            &socio.fecha_nacimiento.dia, &socio.fecha_nacimiento.mes, &socio.fecha_nacimiento.anio,
-            &socio.sexo,
-            &socio.fecha_afiliacion.dia, &socio.fecha_afiliacion.mes, &socio.fecha_afiliacion.anio,
-            socio.categoria,
-            &socio.fecha_ultima_cuota.dia, &socio.fecha_ultima_cuota.mes, &socio.fecha_ultima_cuota.anio,
-            &socio.estado,
-            fecha_auxiliar);
+               "%d,%59[^,],%59[^,],"       // DNI, apellidos, nombres
+               "%d/%d/%d,"                  // fecha_nacimiento
+               "%c,"                        // sexo
+               "%d/%d/%d,"                  // fecha_afiliacion
+               "%9[^,],"                    // categoria
+               "%d/%d/%d,"                  // fecha_ultima_cuota
+               "%c,"                        // estado
+               "%10[^\n]",                  // fecha_baja (puede ser vacío)
+               &socio.DNI,
+               socio.apellidos,
+               socio.nombres,
+               &socio.fecha_nacimiento.dia, &socio.fecha_nacimiento.mes, &socio.fecha_nacimiento.anio,
+               &socio.sexo,
+               &socio.fecha_afiliacion.dia, &socio.fecha_afiliacion.mes, &socio.fecha_afiliacion.anio,
+               socio.categoria,
+               &socio.fecha_ultima_cuota.dia, &socio.fecha_ultima_cuota.mes, &socio.fecha_ultima_cuota.anio,
+               &socio.estado,
+               fecha_auxiliar);
 
         // fecha_baja: si no es A la fecha existe.
         if (socio.estado != 'A')
@@ -89,4 +90,304 @@ int CargarSocios(const char* path)
     fclose(pb);
     return TODO_OK;
 }
+///***********************************************************************************************//
+int AltaSocio(t_indice* ind,FILE* pf, int(*cmp)(const void*, const void*))
+{
+    t_socio socio;
+    unsigned registros;
+
+    rewind(pf);
+
+    pedirDNI(&ind->arbol,&socio.DNI,pf,cmp);
+    pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
+    pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
+    pedirFecha("Nacimiento",&socio.fecha_nacimiento,NULL);
+    pedirSexo(&socio.sexo);
+    obtenerFechaActual(&socio.fecha_afiliacion);
+    socio.fecha_ultima_cuota = socio.fecha_afiliacion;
+    pedirCategoria(socio.categoria,&socio.fecha_nacimiento,&socio.fecha_afiliacion);
+    socio.estado = 'A';
+    socio.fecha_baja.dia = 0;
+    socio.fecha_baja.mes = 0;
+    socio.fecha_baja.anio = 0;
+
+    registros = (ftell(pf)/sizeof(t_socio)) + 1;
+
+    ///ind_insertar(ind,&socio.DNI, registros); -> HAY QUE HACER ESTA FUNCION PARA INSERTAR EN EL INDICE
+    fseek(pf, 0, SEEK_END);
+    fwrite(&socio,sizeof(t_socio),1, pf);
+
+    return TODO_OK;
+}
+///***********************************************************************************************//
+void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, const void*))
+{
+    tNodoArbol** aux;
+    t_entrada_indice indice;
+    t_socio socio;
+    int es_valido;
+
+    do
+    {
+        es_valido = 1;
+        printf("\nIngrese el DNI del Socio: ");
+        *dni = validarRango(10000, 100000000);
+
+        aux = buscarNodoArbol(p, dni, cmp);
+        if (aux != NULL && *aux != NULL)
+        {
+            memcpy(&indice, (*aux)->info, (*aux)->tamInfo);
+
+            fseek(pf, indice.nro_reg * sizeof(t_socio), SEEK_SET);
+            fread(&socio, sizeof(t_socio), 1, pf);
+
+            if (socio.estado != 'B')
+            {
+                printf("\nError! El DNI ingresado ya pertenece a un socio activo o inactivo.");
+                es_valido = 0;
+            }
+        }
+    }
+    while (es_valido == 0);
+}
+///***********************************************************************************************//
+void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max)
+{
+    int es_valido,i;
+    size_t largo;
+    do
+    {
+        es_valido = 1;
+        printf("\nIngrese los %s (max %d caracteres): ", mensaje, tam_max - 1);
+        fgets(destino, tam_max, stdin);
+
+        largo = strlen(destino);
+        if (largo > 0 && destino[largo - 1] == '\n')
+        {
+            destino[largo - 1] = '\0';
+            largo--;
+        }
+
+        if (largo == 0)
+        {
+            printf("\nError! El campo no puede estar vacio.");
+            es_valido = 0;
+        }
+
+        while( destino[i] != '\0')
+        {
+            if (!isalpha((unsigned char)destino[i]) && !isspace((unsigned char)destino[i]))
+                es_valido = 0;
+            i++;
+        }
+        if (!es_valido)
+            printf("Error: No se permiten numeros ni caracteres especiales (ej: @, $, -, *, etc.).\n");
+    }
+    while (!es_valido);
+}
+///***********************************************************************************************//
+void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* minima)
+{
+    int es_valida;
+    int diasLimite;
+    do
+    {
+        es_valida = 1;
+        printf("\nCarga de la Fecha de %s", mensaje);
+        printf("\nIngrese el Anio: ");
+        fecha->mes = validarRango(1900,2026);
+        printf("\nIngrese el Mes: ");
+        fecha->mes = validarRango(1,12);
+        printf("\nIngrese el Dia: ");
+        scanf("%d",&fecha->dia);
+
+        switch (fecha->mes)
+        {
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+            diasLimite = 30;
+            break;
+        case 2:
+            if ((fecha->anio % 4 == 0 && fecha->anio % 100 != 0) || (fecha->anio % 400 == 0))
+                diasLimite = 29;
+            else
+                diasLimite = 28;
+            break;
+        default:
+            diasLimite = 31;
+        }
+        if (fecha->dia < 1 || fecha->dia > diasLimite)
+        {
+            printf("Error! Dia Invalido. El Mes %d del anio %d tiene %d dias.", fecha->mes, fecha->anio, diasLimite);
+            es_valida = 0;
+        }
+        if (minima != NULL)
+        {
+            if (esFechaMenor(fecha, minima))
+            {
+                printf("\nError! La fecha de %s no puede ser anterior a la fecha de Nacimiento.", mensaje);
+                es_valida = 0;
+            }
+        }
+    }
+    while (!es_valida);
+}
+///***********************************************************************************************//
+int esFechaMenor(const t_fecha* f1, const t_fecha* f2)
+{
+    if (f1->anio != f2->anio)
+        return f1->anio < f2->anio;
+    if (f1->mes != f2->mes)
+        return f1->mes < f2->mes;
+    return f1->dia < f2->dia;
+}
+///***********************************************************************************************//
+void pedirSexo(char* sexo)
+{
+    do
+    {
+        printf("\nIngrese el Sexo ('F', 'M', 'O'): ");
+        scanf("%c",sexo);
+        *sexo = toupper(*sexo);
+        if(*sexo!='F' || *sexo!='M'|| *sexo!='O')
+            printf("\nError! Sexo Invalido. ");
+    }
+    while(*sexo!='F' || *sexo!='M'|| *sexo!='O');
+}
+///***********************************************************************************************//
+void obtenerFechaActual(t_fecha* hoy)
+{
+    time_t tiempo_crudo = time(NULL);
+
+    struct tm* tiempo_local = localtime(&tiempo_crudo);
+
+    hoy->dia = tiempo_local->tm_mday;
+    hoy->mes = tiempo_local->tm_mon + 1;       // Hay que sumarle 1 al mes
+    hoy->anio = tiempo_local->tm_year + 1900;  // Hay que sumarle 1900 al año
+}
+///***********************************************************************************************//
+int validarRango(int lim1, int lim2)
+{
+    int dato;
+    do
+    {
+        scanf("%d",&dato);
+        if(dato < lim1 || dato > lim2)
+            printf("\nError! Numero Ingresado Fuera de Rango... Reingrese:");
+    }
+    while(dato < lim1 || dato > lim2);
+    return dato;
+}
+///***********************************************************************************************//
+void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* hoy)
+{
+    int opcion;
+    int es_valido;
+
+    int edad = calcularEdad(nacimiento, hoy);
+
+    do
+    {
+        es_valido = 1;
+
+        printf("\n--- MENU DE CATEGORIAS ---");
+        printf("\nEdad calculada del socio: %d anios\n", edad);
+        printf("[1] MENOR     (0 a 13 anios)\n");
+        printf("[2] CADETE    (14 a 17 anios)\n");
+        printf("[3] ADULTO    (18+ anios)\n");
+        printf("[4] VITALICIO (Mayores de 50 anios)\n");
+        printf("[5] HONORARIO (Cualquier edad)\n");
+        printf("[6] JUBILADO  (Mayores de 60 anios)\n");
+        printf("\nSeleccione la Categoria (1-6): ");
+
+        opcion = validarRango(1, 6);
+
+        switch(opcion)
+        {
+        case 1: // MENOR
+            if (edad > 13)
+            {
+                printf("\nError: El socio es demasiado grande para ser MENOR.\n");
+                es_valido = 0;
+            }
+            else
+                strcpy(categoria, "MENOR");
+            break;
+
+        case 2: // CADETE
+            if (edad < 14 || edad > 17)
+            {
+                printf("\nError: La categoria CADETE es estricta para edades de 14 a 17 anios.\n");
+                es_valido = 0;
+            }
+            else
+                strcpy(categoria, "CADETE");
+            break;
+
+        case 3: // ADULTO
+            if (edad < 18)
+            {
+                printf("\nError: El socio es menor de edad, no puede ser ADULTO.\n");
+                es_valido = 0;
+            }
+            else
+                strcpy(categoria, "ADULTO");
+            break;
+
+        case 4: // VITALICIO
+            if (edad < 50)
+            {
+                printf("\nError: El socio es muy joven para ser VITALICIO.\n");
+                es_valido = 0;
+            }
+            else
+                strcpy(categoria, "VITALICIO");
+            break;
+
+        case 5: // HONORARIO
+            strcpy(categoria, "HONORARIO");
+            break;
+
+        case 6: // JUBILADO
+            if (edad < 60)
+            {
+                printf("\nError: El socio no tiene edad de JUBILADO.\n");
+                es_valido = 0;
+            }
+            else
+                strcpy(categoria, "JUBILADO");
+        }
+
+    }
+    while (es_valido == 0);
+}
+///***********************************************************************************************//
+int calcularEdad(const t_fecha* nacimiento, const t_fecha* hoy)
+{
+    int edad = hoy->anio - nacimiento->anio;
+    if (hoy->mes < nacimiento->mes || (hoy->mes == nacimiento->mes && hoy->dia < nacimiento->dia))
+        edad--;
+    return edad;
+}
+///***********************************************************************************************//
+int CmpDNI(const void* a, const void* b)
+{
+    const t_entrada_indice* indice_a = (const t_entrada_indice*)a;
+    const t_entrada_indice* indice_b = (const t_entrada_indice*)b;
+
+    unsigned* dni_a = (unsigned*)(indice_a->clave);
+    unsigned* dni_b = (unsigned*)(indice_b->clave);
+    if (*dni_a > *dni_b)
+        return 1;
+    if (*dni_a < *dni_b)
+        return -1;
+
+    return 0;
+}
+///***********************************************************************************************//
+///***********************************************************************************************//
+///***********************************************************************************************//
+///***********************************************************************************************//
 ///***********************************************************************************************//
