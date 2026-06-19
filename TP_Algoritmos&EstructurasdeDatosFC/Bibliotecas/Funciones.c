@@ -3,29 +3,34 @@
 char SeleccionarMenu()
 {
     char decision;
-    char opciones[]= "ABMLCS";
+    char opciones[] = "ABMLCS";
+
     do
     {
-        printf("\n ================ MENU ================");
-        printf("\n [A] Alta a un Socio.");
-        printf("\n [B] Baja a un Socio.");
-        printf("\n [M] Modificar Socio.");
-        printf("\n [L] Listar todos los Socios Ordenados.");
-        printf("\n [C] Compactar y Reindexar.");
-        printf("\n [S] Salir.");
-        printf("\n Seleccione una Opcion: ");
+        system("cls");
 
-        scanf(" %c",&decision);//-> el espacion entes del % limpia el buffer no quitar
-        //-> tampoco usar el fflush(stdin) ya que no anda bien
+        printf(YELLOW " ================ MENU ================\n" RESET);
+        printf(GREEN " [A] " RESET "Alta a un Socio.\n");
+        printf(GREEN " [B] " RESET "Baja a un Socio.\n");
+        printf(GREEN " [M] " RESET "Modificar Socio.\n");
+        printf(GREEN " [L] " RESET "Listar todos los Socios Ordenados.\n");
+        printf(GREEN " [C] " RESET "Compactar y Reindexar.\n");
+        printf(RED   " [S] " RESET "Salir.\n");
+        printf(YELLOW " =======================================\n" RESET);
+        printf(" Seleccione una Opcion: ");
+
+        scanf(" %c", &decision);
         decision = toupper(decision);
-        if(strchr(opciones,decision) == NULL)
+
+        if(strchr(opciones, decision) == NULL)
         {
-            printf("\nError! Opcion Seleccion Invalida...\n");
-            system("pause");
-            system("cls");
+            printf(RED "\n Error! Opcion Invalida...\n" RESET);
+            printf(" Presione una tecla para continuar...");
+            getchar();
+            getchar();
         }
     }
-    while(strchr(opciones,decision) == NULL);
+    while(strchr(opciones, decision) == NULL);
     return decision;
 }
 ///***********************************************************************************************//
@@ -91,35 +96,45 @@ int CargarSocios(const char* path)
     return TODO_OK;
 }
 ///***********************************************************************************************//
-int AltaSocio(t_indice* ind,FILE* pf, int(*cmp)(const void*, const void*))
+int AltaSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
 {
     t_socio socio;
     unsigned registros;
 
-    rewind(pf);
+    system("cls");
+    printf(CYAN "=========================================\n");
+    printf("         CARGA DE UN NUEVO SOCIO\n");
+    printf("=========================================\n" RESET);
 
-    pedirDNI(&ind->arbol,&socio.DNI,pf,cmp);
+    rewind(pf);
+    pedirDNI(&ind->arbol, &socio.DNI, pf, cmp);
     pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
     pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
-    pedirFecha("Nacimiento",&socio.fecha_nacimiento,NULL);
+    pedirFecha("Nacimiento", &socio.fecha_nacimiento, NULL);
     pedirSexo(&socio.sexo);
+
     obtenerFechaActual(&socio.fecha_afiliacion);
     socio.fecha_ultima_cuota = socio.fecha_afiliacion;
-    pedirCategoria(socio.categoria,&socio.fecha_nacimiento,&socio.fecha_afiliacion);
+
+    pedirCategoria(socio.categoria, &socio.fecha_nacimiento, &socio.fecha_afiliacion);
+
     socio.estado = 'A';
     socio.fecha_baja.dia = 0;
     socio.fecha_baja.mes = 0;
     socio.fecha_baja.anio = 0;
 
-    registros = (ftell(pf)/sizeof(t_socio)) + 1;
+    registros = (ftell(pf) / sizeof(t_socio)) + 1;
 
-    ///ind_insertar(ind,&socio.DNI, registros); -> HAY QUE HACER ESTA FUNCION PARA INSERTAR EN EL INDICE
+    ind_insertar(ind, &socio.DNI, registros);
     fseek(pf, 0, SEEK_END);
-    fwrite(&socio,sizeof(t_socio),1, pf);
+    fwrite(&socio, sizeof(t_socio), 1, pf);
+
+    printf(GREEN "\n[!] Socio cargado exitosamente.\n" RESET);
+    system("pause");
 
     return TODO_OK;
 }
-///***********************************************************************************************//
+
 void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, const void*))
 {
     tNodoArbol** aux;
@@ -130,60 +145,50 @@ void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, c
     do
     {
         es_valido = 1;
-        printf("\nIngrese el DNI del Socio: ");
+        printf(YELLOW "\nIngrese el DNI del Socio: " RESET);
         *dni = validarRango(10000, 100000000);
 
         aux = buscarNodoArbol(p, dni, cmp);
         if (aux != NULL && *aux != NULL)
         {
             memcpy(&indice, (*aux)->info, (*aux)->tamInfo);
-
             fseek(pf, indice.nro_reg * sizeof(t_socio), SEEK_SET);
             fread(&socio, sizeof(t_socio), 1, pf);
 
             if (socio.estado != 'B')
             {
-                printf("\nError! El DNI ingresado ya pertenece a un socio activo o inactivo.");
+                printf(RED "Error! El DNI ingresado ya pertenece a un socio activo.\n" RESET);
                 es_valido = 0;
             }
         }
-    }
-    while (es_valido == 0);
+    } while (es_valido == 0);
 }
-///***********************************************************************************************//
+
 void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max)
 {
-    int es_valido,i;
+    int es_valido, i;
     size_t largo;
     do
     {
-        es_valido = 1;
-        printf("\nIngrese los %s (max %d caracteres): ", mensaje, tam_max - 1);
+        es_valido = 1; i = 0;
+        printf(YELLOW "Ingrese %s: " RESET, mensaje);
         fgets(destino, tam_max, stdin);
 
         largo = strlen(destino);
-        if (largo > 0 && destino[largo - 1] == '\n')
-        {
-            destino[largo - 1] = '\0';
-            largo--;
-        }
+        if (largo > 0 && destino[largo - 1] == '\n') { destino[largo - 1] = '\0'; largo--; }
 
-        if (largo == 0)
-        {
-            printf("\nError! El campo no puede estar vacio.");
-            es_valido = 0;
-        }
+        if (largo == 0) { printf(RED "Error! El campo no puede estar vacio.\n" RESET); es_valido = 0; }
 
-        while( destino[i] != '\0')
+        while(destino[i] != '\0' && es_valido)
         {
             if (!isalpha((unsigned char)destino[i]) && !isspace((unsigned char)destino[i]))
+            {
+                printf(RED "Error: Solo letras y espacios.\n" RESET);
                 es_valido = 0;
+            }
             i++;
         }
-        if (!es_valido)
-            printf("Error: No se permiten numeros ni caracteres especiales (ej: @, $, -, *, etc.).\n");
-    }
-    while (!es_valido);
+    } while (!es_valido);
 }
 ///***********************************************************************************************//
 void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* minima)
@@ -248,13 +253,12 @@ void pedirSexo(char* sexo)
 {
     do
     {
-        printf("\nIngrese el Sexo ('F', 'M', 'O'): ");
-        scanf("%c",sexo);
+        printf(YELLOW "Ingrese el Sexo (F/M/O): " RESET);
+        scanf(" %c", sexo);
         *sexo = toupper(*sexo);
-        if(*sexo!='F' || *sexo!='M'|| *sexo!='O')
-            printf("\nError! Sexo Invalido. ");
-    }
-    while(*sexo!='F' || *sexo!='M'|| *sexo!='O');
+        if(*sexo != 'F' && *sexo != 'M' && *sexo != 'O')
+            printf(RED "Error! Sexo Invalido.\n" RESET);
+    } while(*sexo != 'F' && *sexo != 'M' && *sexo != 'O');
 }
 ///***********************************************************************************************//
 void obtenerFechaActual(t_fecha* hoy)

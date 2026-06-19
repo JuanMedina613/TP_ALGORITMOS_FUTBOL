@@ -1,6 +1,8 @@
 #ifndef FUNCIONES_H_INCLUDED
 #define FUNCIONES_H_INCLUDED
 
+
+
 #include "TDA_Arbol.h"
 #include "Indice.h"
 
@@ -10,8 +12,14 @@
 #include <ctype.h>
 #include <time.h>
 
+#define RESET   "\033[0m"
+#define CYAN    "\033[1;36m"
+#define YELLOW  "\033[1;33m"
+#define RED     "\033[1;31m"
+#define GREEN   "\033[1;32m"
+
 #define TAM_LINEA 256
-///ESTRUCTURAS/// -> ESTA A ELECCION MODIFICAR PARA QUE QUEDEN MEJOR LOS DATOS DE LAS ESTRUCTURAS
+///ESTRUCTURAS///
 typedef struct{
     int dia,mes,anio;
 }t_fecha;
