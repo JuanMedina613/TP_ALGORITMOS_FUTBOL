@@ -6,10 +6,6 @@
 #include <stdlib.h>
 #include "TDA_Arbol.h"
 
-#define TODO_OK 1
-#define TODO_MAL 0
-
-
 typedef struct{
     void* clave;
     unsigned nro_reg;
@@ -29,7 +25,7 @@ int ind_buscar(const t_indice* ind, void *clave, unsigned *nro_reg);
 int ind_cargar(t_indice* ind, const char* path);
 int ind_grabar(const t_indice* ind, const char* path);
 void ind_vaciar(t_indice* ind);
-int ind_recorrer(const t_indice* ind, void (*accion)(const void *, unsigned, void *), void* param);
+int ind_recorrer(const t_indice* ind, void (*accion)(void *, unsigned, unsigned, void *), void* param);
 
 ///FUNCIONES VARIAS -> SE PODRIA CREAR OTRO LUGAR PARA PONERLAS
 void AccionGrabar(void* info, unsigned tam, unsigned n, void* params);

@@ -5,10 +5,16 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define DUPLICADO 2
 #define TODO_OK 1
 #define TODO_MAL 0
+#define SIN_MEM 3
 
 #define MINIMO(X,Y)((X)<(Y)?(X):(Y))
+#define reservarMemoriaNodo( X , Y , Z , W ) ( \
+    ( ( X ) = (typeof( X ))malloc( Y ) ) == NULL || \
+    ( ( Z ) = malloc( W ) ) == NULL ? \
+    free( X ), 0 : 1 )
 
 typedef struct sNodoArbol{
     void* info;
@@ -28,7 +34,7 @@ void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)
 
 
 ///FUNCIONES QUE CREO NECESARIAS
-int insertarArbol(tArbol *p, const void *pd, unsigned tam, int(*cmp)(const void*,const void*));
+int insertarArbolBinBusq(tArbol *p, const void *pd, unsigned tam, int(*cmp)(const void*,const void*));
 tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*));
 int eliminarElementoArbol(tArbol *p, const void *pd, unsigned tam, int(*cmp)(const void*, const void*));
 int eliminarRaizArbol(tArbol *p);

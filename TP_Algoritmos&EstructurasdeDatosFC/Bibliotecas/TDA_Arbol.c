@@ -84,3 +84,29 @@ tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const voi
     }
     return (tNodoArbol**)p;
 }
+
+//****************************************************************************************************//
+int insertarArbolBinBusq(tArbol *pa,const void *d,unsigned tam, int (*cmp)(const void *, const void *))
+{
+    tNodoArbol *nue;
+    int rc;
+
+    if(*pa)
+    {
+        if((rc = cmp(d, (*pa)->info)) < 0)
+            return insertarArbolBinBusq(&(*pa)->izq, d, tam, cmp);
+        if (rc > 0)
+            return insertarArbolBinBusq(&(*pa)->der, d, tam, cmp);
+        return DUPLICADO;
+    }
+
+    if(!reservarMemoriaNodo(nue, sizeof(tNodoArbol), nue->info, tam))
+        return SIN_MEM;
+    nue->tamInfo = tam;
+    memcpy(nue->info, d, tam);
+    nue->der = NULL;
+    nue->izq = NULL;
+    *pa = nue;
+
+    return TODO_OK;
+}

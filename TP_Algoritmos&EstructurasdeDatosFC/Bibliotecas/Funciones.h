@@ -10,14 +10,12 @@
 #include <ctype.h>
 #include <time.h>
 
-
-#define TODO_MAL 0
-#define TODO_OK 1
 #define TAM_LINEA 256
 ///ESTRUCTURAS/// -> ESTA A ELECCION MODIFICAR PARA QUE QUEDEN MEJOR LOS DATOS DE LAS ESTRUCTURAS
 typedef struct{
     int dia,mes,anio;
 }t_fecha;
+
 typedef struct{
     unsigned DNI;
     char apellidos[60];
