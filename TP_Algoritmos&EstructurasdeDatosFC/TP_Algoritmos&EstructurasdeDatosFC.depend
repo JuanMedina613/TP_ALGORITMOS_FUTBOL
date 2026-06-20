@@ -31,3 +31,32 @@
 1781882615 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\indice.c
 	"Indice.h"
 
+1781987985 source:c:\proyecto github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.c
+	"Funciones.h"
+
+1781987985 c:\proyecto github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.h
+	"TDA_Arbol.h"
+	"Indice.h"
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<ctype.h>
+	<time.h>
+
+1781987985 c:\proyecto github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\tda_arbol.h
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+
+1781987985 c:\proyecto github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\indice.h
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	"TDA_Arbol.h"
+
+1781987985 source:c:\proyecto github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\tda_arbol.c
+	"TDA_Arbol.h"
+
+1781987985 source:c:\proyecto github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\main.c
+	"Bibliotecas/Funciones.h"
+
