@@ -285,6 +285,19 @@ int validarRango(int lim1, int lim2)
     return dato;
 }
 ///***********************************************************************************************//
+unsigned validarPositivo(unsigned lim1, unsigned lim2)
+{
+    unsigned dato;
+    do
+    {
+        scanf("%u",&dato);
+        if(dato < lim1 || dato > lim2)
+            printf("\nError! Numero Ingresado Fuera de Rango... Reingrese:");
+    }
+    while(dato < lim1 || dato > lim2);
+    return dato;
+}
+///***********************************************************************************************//
 void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* hoy)
 {
     int opcion;
@@ -391,7 +404,138 @@ int CmpDNI(const void* a, const void* b)
     return 0;
 }
 ///***********************************************************************************************//
+int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
+{
+    t_socio socio;
+    t_fecha hoy;
+    char opcion;
+    tNodoArbol** aux;
+    t_entrada_indice indice;
+    t_entrada_indice buscado;
+
+    system("cls");
+    printf(CYAN "=========================================\n");
+    printf("         MODIFICAR SOCIO\n");
+    printf("=========================================\n" RESET);
+
+    puts("Ingrese el DNI del socio a modificar: ");
+    socio.DNI = validarPositivo(10000, 100000000);
+    buscado.clave = &socio.DNI;
+    aux = buscarNodoArbol(&(ind->arbol), &buscado, cmp);
+    if (aux != NULL && *aux != NULL)
+    {
+        memcpy(&indice, (*aux)->info, (*aux)->tamInfo);
+        fseek(pf, indice.nro_reg * sizeof(t_socio), SEEK_SET);
+        fread(&socio, sizeof(t_socio), 1, pf);
+
+        if (socio.estado == 'B')
+        {
+            printf(RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
+            return TODO_MAL;
+        }
+        }
+        else
+        {
+            printf(RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
+            return TODO_MAL;
+        }
+
+    do
+    {
+        system("cls");
+
+        printf(YELLOW " ================ MENU ================\n" RESET);
+        printf(GREEN " [A] " RESET "Apellido.\n");
+        printf(GREEN " [B] " RESET "Nombre.\n");
+        printf(GREEN " [C] " RESET "Categoria.\n");
+        printf(GREEN " [D] " RESET "Sexo.\n");
+        printf(GREEN " [E] " RESET "Fecha de ultima cuota paga.\n");
+        printf(RED   " [S] " RESET "Salir.\n");
+        printf(YELLOW " =======================================\n" RESET);
+        printf(" Seleccione un campo a modificar: ");
+
+        scanf("%c", &opcion);
+        opcion = toupper(opcion);
+
+        switch (opcion)
+        {
+            case 'A':
+            pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
+            break;
+
+            case 'B':
+            pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
+            break;
+
+            case 'C':
+            obtenerFechaActual(&hoy);
+            pedirCategoria(socio.categoria, &socio.fecha_nacimiento, &hoy);
+            break;
+
+            case 'D':
+            pedirSexo(&socio.sexo);
+            break;
+
+            case 'E':
+            puts("\nIngrese la nueva fecha de ultima cuota paga: ");
+            socio.fecha_ultima_cuota = validarFecha();
+            break;
+
+            case 'S': break;
+
+            default:
+                printf(RED "\n Error! Opcion Invalida...\n" RESET);
+                printf(" Presione una tecla para continuar...");
+                getchar();
+                getchar();;
+        }
+
+    }while(opcion != 'S');
+
+
+    fseek(pf, (long int)(-sizeof(t_socio)), SEEK_CUR);
+    fwrite(&socio, sizeof(t_socio), 1, pf);
+
+    printf(GREEN "\n[!] Socio modificado exitosamente.\n" RESET);
+    system("pause");
+
+    return TODO_OK;
+}
 ///***********************************************************************************************//
+int esBisiesto(int anio)
+{
+    return (anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0);
+}
+
+int diasEnMes(int mes, int anio)
+{
+    switch(mes)
+    {
+        case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+            return 31;
+        case 4: case 6: case 9: case 11:
+            return 30;
+        case 2:
+            return esBisiesto(anio) ? 29 : 28;
+        default:
+            return 0;
+    }
+}
+
+t_fecha validarFecha()
+{
+    t_fecha f;
+    printf("Ingrese anio: ");
+    f.anio = validarRango(1900, 2100);
+
+    printf("Ingrese mes: ");
+    f.mes = validarRango(1, 12);
+
+    printf("Ingrese dia: ");
+    f.dia = validarRango(1, diasEnMes(f.mes, f.anio));
+
+    return f;
+}
 ///***********************************************************************************************//
 ///***********************************************************************************************//
 ///***********************************************************************************************//

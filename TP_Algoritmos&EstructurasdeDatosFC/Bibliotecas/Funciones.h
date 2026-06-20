@@ -55,4 +55,9 @@ int calcularEdad(const t_fecha* nacimiento, const t_fecha* hoy);
 int validarRango(int lim1, int lim2);
 int esFechaMenor(const t_fecha* f1, const t_fecha* f2);
 int CmpDNI(const void* a, const void* b);
+unsigned validarPositivo(unsigned lim1, unsigned lim2);
+int esBisiesto(int anio);
+int diasEnMes(int mes, int anio);
+t_fecha validarFecha();
+
 #endif // FUNCIONES_H_INCLUDED
