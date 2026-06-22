@@ -18,7 +18,7 @@ void EliminarArbol(tArbol *p)
     }
 }
 //****************************************************************************************************//
-int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned tamInfo)
+/*int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned tamInfo)
 {
     int cantReg,r;
     FILE* pf;
@@ -32,7 +32,6 @@ int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned t
     fclose(pf);
     return r;
 }
-//****************************************************************************************************//
 int CargarDesdeDatosOrdenadosRec(tArbol* p, void* ds, unsigned(*leer)(void**, void*, unsigned, void* params), int li, int ls, void* params)
 {
    int m = (li+ls)/2,r;
@@ -50,7 +49,6 @@ int CargarDesdeDatosOrdenadosRec(tArbol* p, void* ds, unsigned(*leer)(void**, vo
     return CargarDesdeDatosOrdenadosRec(&(*p)->der,ds,leer,m+1,ls,params);
 }
 
-//****************************************************************************************************//
 unsigned leerDesdeArchivoBin(void** d, void* pf, unsigned pos, void* params)
 {
     unsigned tam = *((int*)params);
@@ -59,8 +57,8 @@ unsigned leerDesdeArchivoBin(void** d, void* pf, unsigned pos, void* params)
         return 0;
     fseek((FILE*)pf, pos*tam, SEEK_SET);
     return fread(*d, tam, 1, (FILE*)pf);
-}
-//****************************************************************************************************//
+}*/
+//****************************************************************************************************/
 void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*))
 {
     if(!*p)
@@ -68,7 +66,6 @@ void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)
     recorrerEnOrdenArbol(&(*p)->izq, n+1, params, Accion);
     Accion((*p)->info, (*p)->tamInfo, n, params);
     recorrerEnOrdenArbol(&(*p)->der, n+1, params, Accion);
-
 }
 //****************************************************************************************************//
 tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*))

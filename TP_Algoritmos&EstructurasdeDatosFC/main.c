@@ -4,7 +4,7 @@ int main()
     char opcion;
     t_indice indice;
     FILE *pf;
-    if(CargarSocios("Archivos/socios.csv") == 0)
+    if(CargarSociosenArchivoBinario("Archivos/socios.csv") == 0)
     {
         printf("\nError! Problema con Cargar el Archivo 'Socios.csv'");
         return 0;
@@ -17,7 +17,8 @@ int main()
             return 0;
     }
 
-    ///ACA DEBERIA ESTAR LA CREACION DEL INDICE "SUPONGO"
+    ind_crear(&indice,sizeof(unsigned),CmpDNI);
+    if(ind_cargar(&indice,"Archivos/socios.dat"))
     opcion = SeleccionarMenu();
 
     while(opcion != 'S')
@@ -25,8 +26,9 @@ int main()
         switch(opcion)
         {
         case 'A':
-
             if(!AltaSocio(&indice,pf,CmpDNI))
+                printf("\nError! Hubo un Problema con la Alta del Socio.");
+
             break;
         case 'B':
             break;
@@ -37,8 +39,11 @@ int main()
         case 'C':
             break;
         case 'S':
+            ind_vaciar(&indice);
         }
+        opcion = SeleccionarMenu();
     }
+
 
     return 0;
 }

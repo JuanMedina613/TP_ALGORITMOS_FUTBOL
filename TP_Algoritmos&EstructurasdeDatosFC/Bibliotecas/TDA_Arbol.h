@@ -27,9 +27,10 @@ typedef tNodoArbol* tArbol;
 void CrearArbol(tArbol *p);
 void EliminarArbol(tArbol *p);
 
-int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned tamInfo);
+/*int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned tamInfo);
 int CargarDesdeDatosOrdenadosRec(tArbol* p, void* ds, unsigned(*leer)(void**, void*, unsigned, void* params), int li, int ls, void* params);
-unsigned leerDesdeArchivoBin(void** d, void* pf, unsigned pos, void* params);
+unsigned leerDesdeArchivoBin(void** d, void* pf, unsigned pos, void* params);*/
+int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int(*cmp)(const void*, const void*));
 void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*));
 
 

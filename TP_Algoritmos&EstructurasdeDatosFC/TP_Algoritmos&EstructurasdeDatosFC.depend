@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1781895275 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.c
+1782112173 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.c
 	"Funciones.h"
 
-1781895275 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.h
+1782110262 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.h
 	"TDA_Arbol.h"
 	"Indice.h"
 	<stdio.h>
@@ -11,24 +11,24 @@
 	<ctype.h>
 	<time.h>
 
-1781882615 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\tda_arbol.h
+1782105664 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\tda_arbol.h
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
 
-1781882615 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\indice.h
+1782106683 c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\indice.h
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
 	"TDA_Arbol.h"
 
-1781882615 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\tda_arbol.c
+1782106042 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\tda_arbol.c
 	"TDA_Arbol.h"
 
-1781709879 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\main.c
+1782115003 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\main.c
 	"Bibliotecas/Funciones.h"
 
-1781882615 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\indice.c
+1782109461 source:c:\users\fyj\documents\github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\indice.c
 	"Indice.h"
 
 1781987985 source:c:\proyecto github\tp_algoritmos_futbol\tp_algoritmos&estructurasdedatosfc\bibliotecas\funciones.c
