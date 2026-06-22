@@ -536,6 +536,59 @@ t_fecha validarFecha()
 
     return f;
 }
+
+int listarSociosOrdenados(const t_indice* ind, FILE* pf)
+{
+    if (!ind || !pf || !ind->arbol)
+        return TODO_MAL;
+
+    printf(CYAN "\n========== LISTADO DE SOCIOS ORDENADOS POR DNI ==========\n" RESET);
+
+    ind_recorrer(ind, mostrarSocioOrdenado, pf);
+
+    printf(CYAN "=========================================================\n" RESET);
+    system("pause");
+
+    return TODO_OK;
+}
+
+void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param)
+{
+    t_entrada_indice entrada;
+    t_socio socio;
+    FILE* pf = (FILE*)param;
+
+    memcpy(&entrada, info, tam);
+
+    fseek(pf, entrada.nro_reg * sizeof(t_socio), SEEK_SET);
+    fread(&socio, sizeof(t_socio), 1, pf);
+
+    if (socio.estado != 'B')
+        mostrarSocio(&socio);
+}
+
+void mostrarSocio(const t_socio* socio)
+{
+    printf("\nDNI: %u", socio->DNI);
+    printf("\nApellido: %s", socio->apellidos);
+    printf("\nNombre: %s", socio->nombres);
+    printf("\nFecha Nacimiento: %02d/%02d/%04d",
+           socio->fecha_nacimiento.dia,
+           socio->fecha_nacimiento.mes,
+           socio->fecha_nacimiento.anio);
+    printf("\nSexo: %c", socio->sexo);
+    printf("\nFecha Afiliacion: %02d/%02d/%04d",
+           socio->fecha_afiliacion.dia,
+           socio->fecha_afiliacion.mes,
+           socio->fecha_afiliacion.anio);
+    printf("\nCategoria: %s", socio->categoria);
+    printf("\nUltima cuota paga: %02d/%02d/%04d",
+           socio->fecha_ultima_cuota.dia,
+           socio->fecha_ultima_cuota.mes,
+           socio->fecha_ultima_cuota.anio);
+    printf("\nEstado: %c", socio->estado);
+    printf("\n----------------------------------------\n");
+}
 ///***********************************************************************************************//
 ///***********************************************************************************************//
 ///***********************************************************************************************//
