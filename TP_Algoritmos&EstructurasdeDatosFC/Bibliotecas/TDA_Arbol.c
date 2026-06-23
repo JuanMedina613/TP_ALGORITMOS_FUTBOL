@@ -110,3 +110,60 @@ int insertarArbolBinBusq(tArbol *pa,const void *d,unsigned tam, int (*cmp)(const
 
     return TODO_OK;
 }
+int eliminarRaizArbol(tArbol *p)
+{
+    if(!*p)
+        return TODO_MAL;
+
+    free((*p)->info);
+
+    if(!(*p)->izq && !(*p)->der)
+    {
+        free(*p);
+        *p = NULL;
+        return TODO_OK;
+    }
+
+    tNodoArbol **remp, *elim;
+
+    if (alturaArbol(&(*p)->izq) > alturaArbol(&(*p)->der))
+        remp = mayorNodoArbol(&(*p)->izq);
+    else
+        remp = menorNodoArbol(&(*p)->der);
+
+    elim = *remp;
+
+
+    (*p)->info = elim->info;
+    (*p)->tamInfo = elim->tamInfo;
+
+    *remp = elim->izq ? elim->izq : elim->der;
+
+    free(elim);
+    return TODO_OK;
+}
+unsigned alturaArbol(const tArbol *p)
+{
+    if(!*p)
+        return 0;
+    unsigned altI = alturaArbol(&(*p)->izq);
+    unsigned altD = alturaArbol(&(*p)->der);
+    return (altI > altD ? altI : altD) + 1;
+}
+tNodoArbol **mayorNodoArbol(const tArbol* p)
+{
+    if(!*p)
+        return NULL;
+    while((*p)->der)
+        p = &(*p)->der;
+    return (tNodoArbol**)p;
+}
+
+tNodoArbol **menorNodoArbol(const tArbol* p)
+{
+    if(!*p)
+        return NULL;
+    while((*p)->izq)
+        p = &(*p)->izq;
+    return (tNodoArbol**)p;
+}

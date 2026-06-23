@@ -590,5 +590,43 @@ void mostrarSocio(const t_socio* socio)
     printf("\n----------------------------------------\n");
 }
 ///***********************************************************************************************//
+int BajaSocio(t_indice* ind, FILE* pf)
+{
+    unsigned DniBuscado,
+             nro_reg,
+             RegEliminado;
+    t_socio socio;
+
+    system("cls");
+    printf(CYAN "=========================================\n");
+    printf("         BAJA DE UN SOCIO\n");
+    printf("=========================================\n" RESET);
+
+    printf(YELLOW "Ingrese el DNI del socio a dar de baja: " RESET);
+    DniBuscado = validarRango(10000, 100000000);
+
+    if (ind_buscar(ind, &DniBuscado, &nro_reg) == TODO_MAL)
+    {
+        printf(RED "\nError: El socio no existe o ya está dado de baja.\n" RESET);
+        system("pause");
+        return TODO_MAL;
+    }
+
+    fseek(pf, nro_reg * sizeof(t_socio), SEEK_SET);
+    fread(&socio, sizeof(t_socio), 1, pf);
+
+    socio.estado = 'B';
+    obtenerFechaActual(&socio.fecha_baja);
+
+    fseek(pf, nro_reg * sizeof(t_socio), SEEK_SET);
+    fwrite(&socio, sizeof(t_socio), 1, pf);
+
+    ind_eliminar(ind, &DniBuscado, &RegEliminado);
+
+    printf(GREEN "\n[!] El socio con DNI %u fue dado de baja exitosamente.\n" RESET, DniBuscado);
+    system("pause");
+
+    return TODO_OK;
+}
 ///***********************************************************************************************//
 ///***********************************************************************************************//

@@ -17,6 +17,7 @@ int main()
             return 0;
     }
 
+    ind_crear(&indice, sizeof(unsigned), CmpDNI);
     ///ACA DEBERIA ESTAR LA CREACION DEL INDICE "SUPONGO"
     opcion = SeleccionarMenu();
 
@@ -25,20 +26,25 @@ int main()
         switch(opcion)
         {
         case 'A':
-
-            if(!AltaSocio(&indice,pf,CmpDNI))
+            AltaSocio(&indice,pf,CmpDNI);
             break;
         case 'B':
+            BajaSocio(&indice, pf);
             break;
         case 'M':
             break;
         case 'L':
+            listarSociosOrdenados(&indice, pf);
             break;
         case 'C':
             break;
         case 'S':
+            break;
         }
+
+        opcion = SeleccionarMenu();
     }
+    fclose(pf);
 
     return 0;
 }

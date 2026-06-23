@@ -42,6 +42,8 @@ int CargarSocios(const char* path);
 
 ///FUNCIONE DEL MENU
 int AltaSocio(t_indice* ind,FILE* pf, int(*cmp)(const void*, const void*));
+int BajaSocio(t_indice* ind, FILE* pf);
+int listarSociosOrdenados(const t_indice* ind, FILE* pf);
 
 void pedirDNI(const tArbol* p,unsigned* dni,FILE* pf, int(*cmp)(const void*, const void*));
 void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max);
@@ -59,5 +61,8 @@ unsigned validarPositivo(unsigned lim1, unsigned lim2);
 int esBisiesto(int anio);
 int diasEnMes(int mes, int anio);
 t_fecha validarFecha();
+
+void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param);
+void mostrarSocio(const t_socio* socio);
 
 #endif // FUNCIONES_H_INCLUDED
