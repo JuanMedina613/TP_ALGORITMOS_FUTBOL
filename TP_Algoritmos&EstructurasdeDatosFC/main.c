@@ -1,24 +1,43 @@
-#include "Bibliotecas/Funciones.h"//todas las bibliotecas estan en Funciones
+#include "Bibliotecas/Funciones.h"
 int main()
 {
     char opcion;
     t_indice indice;
     FILE *pf;
-    if(CargarSocios("Archivos/socios.csv") == 0)
+
+    pf = fopen(PATH_SOCIOS_DAT, "r+b");
+    if(!pf)
     {
-        printf("\nError! Problema con Cargar el Archivo 'Socios.csv'");
-        return 0;
+        // hice un cambio aca, socios.dat no existe todavia. paso el csv una sola vez. Sino, en cada ejecucion  pisariamos todas las altas/bajas ya guardadas y el indice quedaria apuntando a posiciones que ya no existen
+
+        if(CargarSociosenArchivoBinario(PATH_SOCIOS_CSV) == TODO_MAL)
+        {
+            fprintf(stderr, "\nError! Problema con Cargar el Archivo '%s'\n", PATH_SOCIOS_CSV);
+            return 1;
+        }
+        printf("\nAviso! Archivo '%s' Cargado Correctamente\n", PATH_SOCIOS_CSV);
+
+        pf = fopen(PATH_SOCIOS_DAT, "r+b");
     }
-    else
+
+    if(!pf)
     {
-        printf("\nAviso! Archivo 'Socios.csv' Cargado Correctamente");
-        pf = fopen("Archivos/Socios.dat","r+b");
-        if(!pf)
-            return 0;
+        fprintf(stderr, "\nError! No se pudo abrir '%s'\n", PATH_SOCIOS_DAT);
+        return 1;
     }
 
     ind_crear(&indice, sizeof(unsigned), CmpDNI);
-    ///ACA DEBERIA ESTAR LA CREACION DEL INDICE "SUPONGO"
+
+    if(!ind_cargar(&indice, PATH_SOCIOS_IDX))
+    {
+        if(!CargarArchivoBinenArbolBinBusq(&indice.arbol, PATH_SOCIOS_DAT, sizeof(unsigned), CmpDNI))
+        {
+            fprintf(stderr, "\nError! No se pudo construir el indice.\n");
+            fclose(pf);
+            return 1;
+        }
+    }
+
     opcion = SeleccionarMenu();
 
     while(opcion != 'S')
@@ -26,24 +45,34 @@ int main()
         switch(opcion)
         {
         case 'A':
-            AltaSocio(&indice,pf,CmpDNI);
+            if(!AltaSocio(&indice, pf, CmpDNI))
+                fprintf(stderr, "\nError! Hubo un Problema con la Alta del Socio.\n");
             break;
+
         case 'B':
             BajaSocio(&indice, pf);
             break;
+
         case 'M':
+            modificarSocio(&indice, pf, CmpDNI);
             break;
+
         case 'L':
             listarSociosOrdenados(&indice, pf);
             break;
+
         case 'C':
-            break;
-        case 'S':
+            CompactarYReindexar(&indice, &pf, PATH_SOCIOS_DAT, CmpDNI);
             break;
         }
 
         opcion = SeleccionarMenu();
     }
+
+    if(!ind_grabar(&indice, PATH_SOCIOS_IDX))
+        fprintf(stderr, "\nError! No se pudo grabar el archivo de indice.\n");
+
+    ind_vaciar(&indice);
     fclose(pf);
 
     return 0;

@@ -18,7 +18,7 @@ void EliminarArbol(tArbol *p)
     }
 }
 //****************************************************************************************************//
-int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned tamInfo)
+/*int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned tamInfo)
 {
     int cantReg,r;
     FILE* pf;
@@ -32,7 +32,6 @@ int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned t
     fclose(pf);
     return r;
 }
-//****************************************************************************************************//
 int CargarDesdeDatosOrdenadosRec(tArbol* p, void* ds, unsigned(*leer)(void**, void*, unsigned, void* params), int li, int ls, void* params)
 {
    int m = (li+ls)/2,r;
@@ -50,7 +49,6 @@ int CargarDesdeDatosOrdenadosRec(tArbol* p, void* ds, unsigned(*leer)(void**, vo
     return CargarDesdeDatosOrdenadosRec(&(*p)->der,ds,leer,m+1,ls,params);
 }
 
-//****************************************************************************************************//
 unsigned leerDesdeArchivoBin(void** d, void* pf, unsigned pos, void* params)
 {
     unsigned tam = *((int*)params);
@@ -59,8 +57,8 @@ unsigned leerDesdeArchivoBin(void** d, void* pf, unsigned pos, void* params)
         return 0;
     fseek((FILE*)pf, pos*tam, SEEK_SET);
     return fread(*d, tam, 1, (FILE*)pf);
-}
-//****************************************************************************************************//
+}*/
+//****************************************************************************************************/
 void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*))
 {
     if(!*p)
@@ -68,7 +66,6 @@ void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)
     recorrerEnOrdenArbol(&(*p)->izq, n+1, params, Accion);
     Accion((*p)->info, (*p)->tamInfo, n, params);
     recorrerEnOrdenArbol(&(*p)->der, n+1, params, Accion);
-
 }
 //****************************************************************************************************//
 tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*))
@@ -78,7 +75,7 @@ tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const voi
         return NULL;
     if(*p && (rc = cmp(pd, (*p)->info)))
     {
-        if(rc<0)
+        if(rc < 0)
             return buscarNodoArbol(&(*p)->izq,pd,cmp);
         return buscarNodoArbol(&(*p)->der,pd,cmp);
     }
@@ -95,6 +92,7 @@ int insertarArbolBinBusq(tArbol *pa,const void *d,unsigned tam, int (*cmp)(const
     {
         if((rc = cmp(d, (*pa)->info)) < 0)
             return insertarArbolBinBusq(&(*pa)->izq, d, tam, cmp);
+
         if (rc > 0)
             return insertarArbolBinBusq(&(*pa)->der, d, tam, cmp);
         return DUPLICADO;
@@ -102,10 +100,13 @@ int insertarArbolBinBusq(tArbol *pa,const void *d,unsigned tam, int (*cmp)(const
 
     if(!reservarMemoriaNodo(nue, sizeof(tNodoArbol), nue->info, tam))
         return SIN_MEM;
+
     nue->tamInfo = tam;
     memcpy(nue->info, d, tam);
+
     nue->der = NULL;
     nue->izq = NULL;
+
     *pa = nue;
 
     return TODO_OK;
@@ -115,6 +116,8 @@ int eliminarRaizArbol(tArbol *p)
     if(!*p)
         return TODO_MAL;
 
+    tNodoArbol **remp, *elim;
+
     free((*p)->info);
 
     if(!(*p)->izq && !(*p)->der)
@@ -123,8 +126,6 @@ int eliminarRaizArbol(tArbol *p)
         *p = NULL;
         return TODO_OK;
     }
-
-    tNodoArbol **remp, *elim;
 
     if (alturaArbol(&(*p)->izq) > alturaArbol(&(*p)->der))
         remp = mayorNodoArbol(&(*p)->izq);

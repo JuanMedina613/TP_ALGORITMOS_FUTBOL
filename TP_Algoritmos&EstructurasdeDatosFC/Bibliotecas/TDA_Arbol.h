@@ -5,9 +5,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define DUPLICADO 2
 #define TODO_OK 1
 #define TODO_MAL 0
+#define DUPLICADO 2
 #define SIN_MEM 3
 
 #define MINIMO(X,Y)((X)<(Y)?(X):(Y))
@@ -27,9 +27,7 @@ typedef tNodoArbol* tArbol;
 void CrearArbol(tArbol *p);
 void EliminarArbol(tArbol *p);
 
-int CargarArchivoBinOrdenadoArbolBinBusq(tArbol *p, const char* path, unsigned tamInfo);
-int CargarDesdeDatosOrdenadosRec(tArbol* p, void* ds, unsigned(*leer)(void**, void*, unsigned, void* params), int li, int ls, void* params);
-unsigned leerDesdeArchivoBin(void** d, void* pf, unsigned pos, void* params);
+
 void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*));
 
 

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "TDA_Arbol.h"
 
+
 typedef struct{
     void* clave;
     unsigned nro_reg;

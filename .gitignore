@@ -1,6 +1,14 @@
-TP_Algoritmos&EstructurasdeDatosFC/TP_Algoritmos&EstructurasdeDatosFC.layout
-TP_Algoritmos&EstructurasdeDatosFC/obj/Debug/main.o
-TP_Algoritmos&EstructurasdeDatosFC/obj/Debug/Bibliotecas/TDA_Arbol.o
-TP_Algoritmos&EstructurasdeDatosFC/obj/Debug/Bibliotecas/Indice.o
-TP_Algoritmos&EstructurasdeDatosFC/obj/Debug/Bibliotecas/Funciones.o
-TP_Algoritmos&EstructurasdeDatosFC/bin/Debug/TP_Algoritmos&EstructurasdeDatosFC.exe
+# Binarios generados
+*.exe
+*.o
+obj/
+bin/
+
+# Archivos de datos generados en runtime (se regeneran del csv)
+Archivos/socios.dat
+Archivos/socios.idx
+
+# Archivos de proyecto de Code::Blocks (cache local, no hace falta compartirlos)
+*.depend
+*.layout
+*.cscope_file_list

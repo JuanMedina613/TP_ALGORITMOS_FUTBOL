@@ -1,8 +1,6 @@
 #ifndef FUNCIONES_H_INCLUDED
 #define FUNCIONES_H_INCLUDED
 
-
-
 #include "TDA_Arbol.h"
 #include "Indice.h"
 
@@ -19,6 +17,31 @@
 #define GREEN   "\033[1;32m"
 
 #define TAM_LINEA 256
+#define TAM_NYA 60
+#define TAM_CATEGORIA 10
+
+///PATHS DE ARCHIVOS///
+#define PATH_SOCIOS_CSV "Archivos/socios.csv"
+#define PATH_SOCIOS_DAT "Archivos/socios.dat"
+#define PATH_SOCIOS_IDX "Archivos/socios.idx"
+
+///RANGOS VALIDOS ///
+#define DNI_MIN 10000u
+#define DNI_MAX 100000000u
+#define DIA_MIN 1u
+#define MES_MIN 1u
+#define MES_MAX 12u
+#define ANIO_MIN 1900u
+#define ANIO_MAX 2026u
+
+///EDADES LIMITE POR CATEGORIA///
+#define EDAD_MENOR_MAX      13
+#define EDAD_CADETE_MIN     14
+#define EDAD_CADETE_MAX     17
+#define EDAD_ADULTO_MIN     18
+#define EDAD_VITALICIO_MIN  50
+#define EDAD_JUBILADO_MIN   60
+
 ///ESTRUCTURAS///
 typedef struct{
     int dia,mes,anio;
@@ -26,41 +49,58 @@ typedef struct{
 
 typedef struct{
     unsigned DNI;
-    char apellidos[60];
-    char nombres[60];
+    char apellidos[TAM_NYA + 1];
+    char nombres[TAM_NYA + 1];
     t_fecha fecha_nacimiento;
     char sexo;
     t_fecha fecha_afiliacion;
-    char categoria[10];
+    char categoria[TAM_CATEGORIA + 1];
     t_fecha fecha_ultima_cuota;
     char estado;
     t_fecha fecha_baja;
 }t_socio;
 
 char SeleccionarMenu();
-int CargarSocios(const char* path);
+int CargarSociosenArchivoBinario(const char* path);
+int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int(*cmp)(const void*, const void*));
 
 ///FUNCIONE DEL MENU
 int AltaSocio(t_indice* ind,FILE* pf, int(*cmp)(const void*, const void*));
 int BajaSocio(t_indice* ind, FILE* pf);
 int listarSociosOrdenados(const t_indice* ind, FILE* pf);
+int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*));
+int ListarSociosOrdenados(const t_indice* ind, FILE* pf);
+int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path, int(*cmp)(const void*, const void*));
 
-void pedirDNI(const tArbol* p,unsigned* dni,FILE* pf, int(*cmp)(const void*, const void*));
+
+///FUNCIONES NECESARIAS PARA LAS FUNCIONES DEL MENU
+void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param);
+void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, const void*));
 void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max);
 void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* nacimiento);
 void pedirSexo(char* sexo);
 void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* hoy);
 void obtenerFechaActual(t_fecha* hoy);
 int calcularEdad(const t_fecha* nacimiento, const t_fecha* hoy);
-///VALIDACIONES
-
-int validarRango(int lim1, int lim2);
+unsigned validarRango(unsigned lim1, unsigned lim2);
+t_fecha validarFecha();
 int esFechaMenor(const t_fecha* f1, const t_fecha* f2);
-int CmpDNI(const void* a, const void* b);
-unsigned validarPositivo(unsigned lim1, unsigned lim2);
 int esBisiesto(int anio);
 int diasEnMes(int mes, int anio);
-t_fecha validarFecha();
+void mostrarSocio(const t_socio* socio);
+
+
+///CMP DEL INDICE
+int CmpDNI(const void* a, const void* b);
+
+///VALIDACIONES
+
+
+
+
+
+
+
 
 void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param);
 void mostrarSocio(const t_socio* socio);

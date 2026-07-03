@@ -34,7 +34,7 @@ char SeleccionarMenu()
     return decision;
 }
 ///***********************************************************************************************//
-int CargarSocios(const char* path)
+int CargarSociosenArchivoBinario(const char* path)
 {
     FILE* pb,*pf;
     pf = fopen(path, "rt");
@@ -42,6 +42,9 @@ int CargarSocios(const char* path)
         return TODO_MAL;
 
     char nuevo[TAM_LINEA];
+    t_socio socio;
+    char linea[TAM_LINEA];
+    char fecha_auxiliar[11] = "";// PUEDE QUE VENGA VACIO Y HAY QUE CONTROLARLO
     strcpy(nuevo, path);
     char* punto = strrchr(nuevo, '.');
     if (!punto)
@@ -57,9 +60,7 @@ int CargarSocios(const char* path)
         return TODO_MAL;
     }
 
-    t_socio socio;
-    char linea[TAM_LINEA];
-    char fecha_auxiliar[11] = "";// PUEDE QUE VENGA VACIO Y HAY QUE CONTROLARLO
+
     while (fgets(linea, sizeof(linea), pf))
     {
 
@@ -93,6 +94,39 @@ int CargarSocios(const char* path)
 
     fclose(pf);
     fclose(pb);
+    return TODO_OK;
+}
+int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int(*cmp)(const void*, const void*))
+{
+    FILE* pf = fopen(path,"rb");
+    if(!pf)
+        return TODO_MAL;
+
+    unsigned contador = 0;
+    t_socio socio;
+    t_entrada_indice entrada;
+
+    fread(&socio,sizeof(t_socio),1,pf);
+    while(!feof(pf))
+     {
+        if(socio.estado != 'B')
+        {
+            entrada.clave = malloc(tam);
+            if (!entrada.clave)
+            {
+                fclose(pf);
+                return TODO_MAL;
+            }
+            memcpy(entrada.clave, &socio.DNI, tam);
+            entrada.nro_reg = contador;
+
+            if(insertarArbolBinBusq(p,&entrada,sizeof(t_entrada_indice),cmp) != TODO_OK)
+                free(entrada.clave);
+        }
+        contador++;
+        fread(&socio, sizeof(t_socio), 1, pf);
+    }
+    fclose(pf);
     return TODO_OK;
 }
 ///***********************************************************************************************//
@@ -139,6 +173,7 @@ void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, c
 {
     tNodoArbol** aux;
     t_entrada_indice indice;
+    t_entrada_indice buscado;
     t_socio socio;
     int es_valido;
 
@@ -146,9 +181,11 @@ void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, c
     {
         es_valido = 1;
         printf(YELLOW "\nIngrese el DNI del Socio: " RESET);
-        *dni = validarRango(10000, 100000000);
+        *dni = validarRango(DNI_MIN, DNI_MAX);
 
-        aux = buscarNodoArbol(p, dni, cmp);
+        buscado.clave = dni;
+        aux = buscarNodoArbol(p, &buscado, cmp);
+
         if (aux != NULL && *aux != NULL)
         {
             memcpy(&indice, (*aux)->info, (*aux)->tamInfo);
@@ -157,7 +194,7 @@ void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, c
 
             if (socio.estado != 'B')
             {
-                printf(RED "Error! El DNI ingresado ya pertenece a un socio activo.\n" RESET);
+                fprintf(stderr, RED "Error! El DNI ingresado ya pertenece a un socio activo.\n" RESET);
                 es_valido = 0;
             }
         }
@@ -177,13 +214,17 @@ void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max)
         largo = strlen(destino);
         if (largo > 0 && destino[largo - 1] == '\n') { destino[largo - 1] = '\0'; largo--; }
 
-        if (largo == 0) { printf(RED "Error! El campo no puede estar vacio.\n" RESET); es_valido = 0; }
+        if (largo == 0)
+        {
+            fprintf(stderr, RED "Error! El campo no puede estar vacio.\n" RESET);
+            es_valido = 0;
+        }
 
         while(destino[i] != '\0' && es_valido)
         {
             if (!isalpha((unsigned char)destino[i]) && !isspace((unsigned char)destino[i]))
             {
-                printf(RED "Error: Solo letras y espacios.\n" RESET);
+                fprintf(stderr, RED "Error: Solo letras y espacios.\n" RESET);
                 es_valido = 0;
             }
             i++;
@@ -198,37 +239,26 @@ void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* minima)
     do
     {
         es_valida = 1;
+
         printf("\nCarga de la Fecha de %s", mensaje);
+
         printf("\nIngrese el Anio: ");
-        fecha->mes = validarRango(1900,2026);
+        fecha->anio = validarRango(ANIO_MIN, ANIO_MAX);
+
         printf("\nIngrese el Mes: ");
-        fecha->mes = validarRango(1,12);
+        fecha->mes = validarRango(MES_MIN, MES_MAX);
+
         printf("\nIngrese el Dia: ");
         scanf("%d",&fecha->dia);
 
-        switch (fecha->mes)
-        {
-        case 4:
-        case 6:
-        case 9:
-        case 11:
-            diasLimite = 30;
-            break;
-        case 2:
-            if ((fecha->anio % 4 == 0 && fecha->anio % 100 != 0) || (fecha->anio % 400 == 0))
-                diasLimite = 29;
-            else
-                diasLimite = 28;
-            break;
-        default:
-            diasLimite = 31;
-        }
+        diasLimite = diasEnMes(fecha->mes, fecha->anio);
+
         if (fecha->dia < 1 || fecha->dia > diasLimite)
         {
             printf("Error! Dia Invalido. El Mes %d del anio %d tiene %d dias.", fecha->mes, fecha->anio, diasLimite);
             es_valida = 0;
         }
-        if (minima != NULL)
+        if (minima != NULL && es_valida)
         {
             if (esFechaMenor(fecha, minima))
             {
@@ -244,8 +274,10 @@ int esFechaMenor(const t_fecha* f1, const t_fecha* f2)
 {
     if (f1->anio != f2->anio)
         return f1->anio < f2->anio;
+
     if (f1->mes != f2->mes)
         return f1->mes < f2->mes;
+
     return f1->dia < f2->dia;
 }
 ///***********************************************************************************************//
@@ -272,25 +304,12 @@ void obtenerFechaActual(t_fecha* hoy)
     hoy->anio = tiempo_local->tm_year + 1900;  // Hay que sumarle 1900 al año
 }
 ///***********************************************************************************************//
-int validarRango(int lim1, int lim2)
-{
-    int dato;
-    do
-    {
-        scanf("%d",&dato);
-        if(dato < lim1 || dato > lim2)
-            printf("\nError! Numero Ingresado Fuera de Rango... Reingrese:");
-    }
-    while(dato < lim1 || dato > lim2);
-    return dato;
-}
-///***********************************************************************************************//
-unsigned validarPositivo(unsigned lim1, unsigned lim2)
+unsigned validarRango(unsigned lim1, unsigned lim2)
 {
     unsigned dato;
     do
     {
-        scanf("%u",&dato);
+        scanf("%d",&dato);
         if(dato < lim1 || dato > lim2)
             printf("\nError! Numero Ingresado Fuera de Rango... Reingrese:");
     }
@@ -311,12 +330,12 @@ void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* h
 
         printf("\n--- MENU DE CATEGORIAS ---");
         printf("\nEdad calculada del socio: %d anios\n", edad);
-        printf("[1] MENOR     (0 a 13 anios)\n");
-        printf("[2] CADETE    (14 a 17 anios)\n");
-        printf("[3] ADULTO    (18+ anios)\n");
-        printf("[4] VITALICIO (Mayores de 50 anios)\n");
+        printf("[1] MENOR     (0 a %d anios)\n", EDAD_MENOR_MAX);
+        printf("[2] CADETE    (%d a %d anios)\n", EDAD_CADETE_MIN, EDAD_CADETE_MAX);
+        printf("[3] ADULTO    (%d+ anios)\n", EDAD_ADULTO_MIN);
+        printf("[4] VITALICIO (Mayores de %d anios)\n", EDAD_VITALICIO_MIN);
         printf("[5] HONORARIO (Cualquier edad)\n");
-        printf("[6] JUBILADO  (Mayores de 60 anios)\n");
+        printf("[6] JUBILADO  (Mayores de %d anios)\n", EDAD_JUBILADO_MIN);
         printf("\nSeleccione la Categoria (1-6): ");
 
         opcion = validarRango(1, 6);
@@ -324,7 +343,7 @@ void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* h
         switch(opcion)
         {
         case 1: // MENOR
-            if (edad > 13)
+            if (edad > EDAD_MENOR_MAX)
             {
                 printf("\nError: El socio es demasiado grande para ser MENOR.\n");
                 es_valido = 0;
@@ -334,7 +353,7 @@ void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* h
             break;
 
         case 2: // CADETE
-            if (edad < 14 || edad > 17)
+            if (edad < EDAD_CADETE_MIN || edad > EDAD_CADETE_MAX)
             {
                 printf("\nError: La categoria CADETE es estricta para edades de 14 a 17 anios.\n");
                 es_valido = 0;
@@ -344,7 +363,7 @@ void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* h
             break;
 
         case 3: // ADULTO
-            if (edad < 18)
+            if (edad < EDAD_ADULTO_MIN)
             {
                 printf("\nError: El socio es menor de edad, no puede ser ADULTO.\n");
                 es_valido = 0;
@@ -354,7 +373,7 @@ void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* h
             break;
 
         case 4: // VITALICIO
-            if (edad < 50)
+            if (edad < EDAD_VITALICIO_MIN)
             {
                 printf("\nError: El socio es muy joven para ser VITALICIO.\n");
                 es_valido = 0;
@@ -368,7 +387,7 @@ void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* h
             break;
 
         case 6: // JUBILADO
-            if (edad < 60)
+            if (edad < EDAD_JUBILADO_MIN)
             {
                 printf("\nError: El socio no tiene edad de JUBILADO.\n");
                 es_valido = 0;
@@ -396,6 +415,7 @@ int CmpDNI(const void* a, const void* b)
 
     unsigned* dni_a = (unsigned*)(indice_a->clave);
     unsigned* dni_b = (unsigned*)(indice_b->clave);
+
     if (*dni_a > *dni_b)
         return 1;
     if (*dni_a < *dni_b)
@@ -419,7 +439,7 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
     printf("=========================================\n" RESET);
 
     puts("Ingrese el DNI del socio a modificar: ");
-    socio.DNI = validarPositivo(10000, 100000000);
+    socio.DNI = validarRango(DNI_MIN, DNI_MAX);
     buscado.clave = &socio.DNI;
     aux = buscarNodoArbol(&(ind->arbol), &buscado, cmp);
     if (aux != NULL && *aux != NULL)
@@ -430,10 +450,11 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
 
         if (socio.estado == 'B')
         {
-            printf(RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
+            fprintf(stderr, RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
+            system("pause");
             return TODO_MAL;
         }
-        }
+    }
         else
         {
             printf(RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
@@ -526,13 +547,13 @@ t_fecha validarFecha()
 {
     t_fecha f;
     printf("Ingrese anio: ");
-    f.anio = validarRango(1900, 2100);
+    f.anio = (int)validarRango(ANIO_MIN, ANIO_MAX);
 
     printf("Ingrese mes: ");
-    f.mes = validarRango(1, 12);
+    f.mes = validarRango(MES_MIN, MES_MAX);
 
     printf("Ingrese dia: ");
-    f.dia = validarRango(1, diasEnMes(f.mes, f.anio));
+    f.dia = validarRango(DIA_MIN, diasEnMes(f.mes, f.anio));
 
     return f;
 }
@@ -607,7 +628,7 @@ int BajaSocio(t_indice* ind, FILE* pf)
 
     if (ind_buscar(ind, &DniBuscado, &nro_reg) == TODO_MAL)
     {
-        printf(RED "\nError: El socio no existe o ya está dado de baja.\n" RESET);
+        fprintf(stderr, RED "\nError: El socio no existe o ya esta dado de baja.\n" RESET);
         system("pause");
         return TODO_MAL;
     }
@@ -629,4 +650,67 @@ int BajaSocio(t_indice* ind, FILE* pf)
     return TODO_OK;
 }
 ///***********************************************************************************************//
+int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path, int(*cmp)(const void*, const void*))
+{
+    FILE* pTemp;
+    t_socio socio;
+    char pathTemp[TAM_LINEA];
+
+    if(!ind || !ppf || !*ppf)
+        return TODO_MAL;
+
+    system("cls");
+    printf(CYAN "=========================================\n");
+    printf("      COMPACTAR Y REINDEXAR\n");
+    printf("=========================================\n" RESET);
+
+    snprintf(pathTemp, sizeof(pathTemp), "%s.tmp", path);
+
+    pTemp = fopen(pathTemp, "wb");
+    if(!pTemp)
+    {
+        fprintf(stderr, RED "Error! No se pudo crear el archivo temporal.\n" RESET);
+        return TODO_MAL;
+    }
+
+    rewind(*ppf);
+
+    fread(&socio, sizeof(t_socio), 1, *ppf);
+    while(!feof(*ppf))
+    {
+        if(socio.estado != 'B') // se descartan los socios dados de baja
+            fwrite(&socio, sizeof(t_socio), 1, pTemp);
+
+        fread(&socio, sizeof(t_socio), 1, *ppf);
+    }
+
+    fclose(pTemp);
+    fclose(*ppf);
+    *ppf = NULL;
+
+    if(remove(path) != 0 || rename(pathTemp, path) != 0)
+    {
+        fprintf(stderr, RED "Error! No se pudo reemplazar el archivo de datos.\n" RESET);
+        return TODO_MAL;
+    }
+
+    *ppf = fopen(path, "r+b");
+    if(!*ppf)
+    {
+        fprintf(stderr, RED "Error! No se pudo reabrir el archivo de datos.\n" RESET);
+        return TODO_MAL;
+    }
+
+    ind_vaciar(ind);
+    if(!CargarArchivoBinenArbolBinBusq(&ind->arbol, path, ind->tamClave, cmp))
+    {
+        fprintf(stderr, RED "Error! No se pudo reconstruir el indice.\n" RESET);
+        return TODO_MAL;
+    }
+
+    printf(GREEN "\n[!] Compactacion y reindexado realizados exitosamente.\n" RESET);
+    system("pause");
+
+    return TODO_OK;
+}
 ///***********************************************************************************************//
