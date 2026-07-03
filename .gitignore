@@ -5,8 +5,8 @@ obj/
 bin/
 
 # Archivos de datos generados en runtime (se regeneran del csv)
-Archivos/socios.dat
-Archivos/socios.idx
+socios.dat
+socios.idx
 
 # Archivos de proyecto de Code::Blocks (cache local, no hace falta compartirlos)
 *.depend
