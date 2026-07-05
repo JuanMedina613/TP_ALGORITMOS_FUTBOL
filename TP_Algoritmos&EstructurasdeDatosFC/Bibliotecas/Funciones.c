@@ -108,7 +108,7 @@ int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int
 
     fread(&socio,sizeof(t_socio),1,pf);
     while(!feof(pf))
-     {
+    {
         if(socio.estado != 'B')
         {
             entrada.clave = malloc(tam);
@@ -130,75 +130,85 @@ int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int
     return TODO_OK;
 }
 ///***********************************************************************************************//
-int AltaSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
+int AltaSocio(t_indice* ind, FILE* pf)
 {
     t_socio socio;
     unsigned registros;
-
+    int estado_condicion;
     system("cls");
     printf(CYAN "=========================================\n");
     printf("         CARGA DE UN NUEVO SOCIO\n");
     printf("=========================================\n" RESET);
 
     rewind(pf);
-    pedirDNI(&ind->arbol, &socio.DNI, pf, cmp);
-    pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
-    pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
-    pedirFecha("Nacimiento", &socio.fecha_nacimiento, NULL);
-    pedirSexo(&socio.sexo);
 
-    obtenerFechaActual(&socio.fecha_afiliacion);
-    socio.fecha_ultima_cuota = socio.fecha_afiliacion;
+    estado_condicion = pedirDNI(ind, &socio.DNI, pf);
+    if(estado_condicion == 2)
+    {
+        pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
+        pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
+        pedirFecha("Nacimiento", &socio.fecha_nacimiento, NULL);
+        pedirSexo(&socio.sexo);
 
-    pedirCategoria(socio.categoria, &socio.fecha_nacimiento, &socio.fecha_afiliacion);
+        obtenerFechaActual(&socio.fecha_afiliacion);
+        socio.fecha_ultima_cuota = socio.fecha_afiliacion;
 
-    socio.estado = 'A';
-    socio.fecha_baja.dia = 0;
-    socio.fecha_baja.mes = 0;
-    socio.fecha_baja.anio = 0;
+        pedirCategoria(socio.categoria, &socio.fecha_nacimiento, &socio.fecha_afiliacion);
 
-    registros = (ftell(pf) / sizeof(t_socio)) + 1;
+        socio.estado = 'A';
+        socio.fecha_baja.dia = 0;
+        socio.fecha_baja.mes = 0;
+        socio.fecha_baja.anio = 0;
 
-    ind_insertar(ind, &socio.DNI, registros);
-    fseek(pf, 0, SEEK_END);
-    fwrite(&socio, sizeof(t_socio), 1, pf);
+        fseek(pf, 0, SEEK_END);
 
-    printf(GREEN "\n[!] Socio cargado exitosamente.\n" RESET);
-    system("pause");
+        registros = (ftell(pf) / sizeof(t_socio));
+
+        ind_insertar(ind, &socio.DNI, registros);
+        //fseek(pf, 0, SEEK_END);
+        fwrite(&socio, sizeof(t_socio), 1, pf);
+
+        printf(GREEN "\n[!] Socio cargado exitosamente.\n" RESET);
+        system("pause");
+
+    }
+
 
     return TODO_OK;
 }
 
-void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, const void*))
+int pedirDNI(const t_indice* ind, unsigned* dni, FILE* pf)
 {
-    tNodoArbol** aux;
-    t_entrada_indice indice;
-    t_entrada_indice buscado;
+    unsigned nro_reg;
     t_socio socio;
     int es_valido;
 
-    do
+    printf(YELLOW "\nIngrese el DNI del Socio: " RESET);
+    *dni = validarRango(DNI_MIN, DNI_MAX);
+    while (getchar() != '\n');
+
+    if (ind_buscar(ind, dni, &nro_reg) == TODO_OK)
     {
-        es_valido = 1;
-        printf(YELLOW "\nIngrese el DNI del Socio: " RESET);
-        *dni = validarRango(DNI_MIN, DNI_MAX);
+        fseek(pf, (nro_reg - 1)* sizeof(t_socio), SEEK_SET);
+        fread(&socio, sizeof(t_socio), 1, pf);
 
-        buscado.clave = dni;
-        aux = buscarNodoArbol(p, &buscado, cmp);
-
-        if (aux != NULL && *aux != NULL)
+        if(socio.estado == 'I')
         {
-            memcpy(&indice, (*aux)->info, (*aux)->tamInfo);
-            fseek(pf, indice.nro_reg * sizeof(t_socio), SEEK_SET);
-            fread(&socio, sizeof(t_socio), 1, pf);
-
-            if (socio.estado != 'B')
-            {
-                fprintf(stderr, RED "Error! El DNI ingresado ya pertenece a un socio activo.\n" RESET);
-                es_valido = 0;
-            }
+            socio.estado = 'A';
+            fseek(pf, (long int)sizeof(t_socio)*(-1), SEEK_CUR);
+            fwrite(&socio, sizeof(t_socio), 1, pf);
+            printf(RED "\nAviso! Socio Inactivo (%s %s- %d) dado de Alta Correctamente." RESET "\n", socio.nombres, socio.apellidos, socio.DNI);
         }
-    } while (es_valido == 0);
+        else
+            printf( RED "\nError! El DNI ingresado ya pertenece a un Socio Activo." RESET);
+
+        system("pause");
+        es_valido = 1;
+    }
+    else
+        es_valido = 2;
+
+    return es_valido;
 }
 
 void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max)
@@ -207,12 +217,18 @@ void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max)
     size_t largo;
     do
     {
-        es_valido = 1; i = 0;
+        es_valido = 1;
+        i = 0;
+        fflush(stdin);
         printf(YELLOW "Ingrese %s: " RESET, mensaje);
         fgets(destino, tam_max, stdin);
 
         largo = strlen(destino);
-        if (largo > 0 && destino[largo - 1] == '\n') { destino[largo - 1] = '\0'; largo--; }
+        if (largo > 0 && destino[largo - 1] == '\n')
+        {
+            destino[largo - 1] = '\0';
+            largo--;
+        }
 
         if (largo == 0)
         {
@@ -229,7 +245,8 @@ void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max)
             }
             i++;
         }
-    } while (!es_valido);
+    }
+    while (!es_valido);
 }
 ///***********************************************************************************************//
 void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* minima)
@@ -290,7 +307,8 @@ void pedirSexo(char* sexo)
         *sexo = toupper(*sexo);
         if(*sexo != 'F' && *sexo != 'M' && *sexo != 'O')
             printf(RED "Error! Sexo Invalido.\n" RESET);
-    } while(*sexo != 'F' && *sexo != 'M' && *sexo != 'O');
+    }
+    while(*sexo != 'F' && *sexo != 'M' && *sexo != 'O');
 }
 ///***********************************************************************************************//
 void obtenerFechaActual(t_fecha* hoy)
@@ -311,7 +329,7 @@ unsigned validarRango(unsigned lim1, unsigned lim2)
     {
         scanf("%d",&dato);
         if(dato < lim1 || dato > lim2)
-            printf("\nError! Numero Ingresado Fuera de Rango... Reingrese:");
+            printf("\nError! Fuera de Rango [%d - %d]... Reingrese:", lim1,lim2);
     }
     while(dato < lim1 || dato > lim2);
     return dato;
@@ -455,11 +473,11 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
             return TODO_MAL;
         }
     }
-        else
-        {
-            printf(RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
-            return TODO_MAL;
-        }
+    else
+    {
+        printf(RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
+        return TODO_MAL;
+    }
 
     do
     {
@@ -480,38 +498,40 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
 
         switch (opcion)
         {
-            case 'A':
+        case 'A':
             pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
             break;
 
-            case 'B':
+        case 'B':
             pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
             break;
 
-            case 'C':
+        case 'C':
             obtenerFechaActual(&hoy);
             pedirCategoria(socio.categoria, &socio.fecha_nacimiento, &hoy);
             break;
 
-            case 'D':
+        case 'D':
             pedirSexo(&socio.sexo);
             break;
 
-            case 'E':
+        case 'E':
             puts("\nIngrese la nueva fecha de ultima cuota paga: ");
             socio.fecha_ultima_cuota = validarFecha();
             break;
 
-            case 'S': break;
+        case 'S':
+            break;
 
-            default:
-                printf(RED "\n Error! Opcion Invalida...\n" RESET);
-                printf(" Presione una tecla para continuar...");
-                getchar();
-                getchar();;
+        default:
+            printf(RED "\n Error! Opcion Invalida...\n" RESET);
+            printf(" Presione una tecla para continuar...");
+            getchar();
+            getchar();;
         }
 
-    }while(opcion != 'S');
+    }
+    while(opcion != 'S');
 
 
     fseek(pf, (long int)(-sizeof(t_socio)), SEEK_CUR);
@@ -532,14 +552,23 @@ int diasEnMes(int mes, int anio)
 {
     switch(mes)
     {
-        case 1: case 3: case 5: case 7: case 8: case 10: case 12:
-            return 31;
-        case 4: case 6: case 9: case 11:
-            return 30;
-        case 2:
-            return esBisiesto(anio) ? 29 : 28;
-        default:
-            return 0;
+    case 1:
+    case 3:
+    case 5:
+    case 7:
+    case 8:
+    case 10:
+    case 12:
+        return 31;
+    case 4:
+    case 6:
+    case 9:
+    case 11:
+        return 30;
+    case 2:
+        return esBisiesto(anio) ? 29 : 28;
+    default:
+        return 0;
     }
 }
 

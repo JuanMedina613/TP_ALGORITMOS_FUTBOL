@@ -45,7 +45,7 @@ int main()
         switch(opcion)
         {
         case 'A':
-            if(!AltaSocio(&indice, pf, CmpDNI))
+            if(!AltaSocio(&indice, pf))
                 fprintf(stderr, "\nError! Hubo un Problema con la Alta del Socio.\n");
             break;
 

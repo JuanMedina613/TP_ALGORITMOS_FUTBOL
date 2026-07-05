@@ -65,7 +65,7 @@ int CargarSociosenArchivoBinario(const char* path);
 int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int(*cmp)(const void*, const void*));
 
 ///FUNCIONE DEL MENU
-int AltaSocio(t_indice* ind,FILE* pf, int(*cmp)(const void*, const void*));
+int AltaSocio(t_indice* ind, FILE* pf);
 int BajaSocio(t_indice* ind, FILE* pf);
 int listarSociosOrdenados(const t_indice* ind, FILE* pf);
 int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*));
@@ -75,7 +75,7 @@ int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path, int(*cmp)(c
 
 ///FUNCIONES NECESARIAS PARA LAS FUNCIONES DEL MENU
 void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param);
-void pedirDNI(const tArbol* p, unsigned* dni, FILE* pf, int(*cmp)(const void*, const void*));
+int pedirDNI(const t_indice* ind, unsigned* dni, FILE* pf);
 void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max);
 void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* nacimiento);
 void pedirSexo(char* sexo);
