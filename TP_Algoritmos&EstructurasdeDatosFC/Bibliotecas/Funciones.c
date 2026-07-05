@@ -166,7 +166,7 @@ int AltaSocio(t_indice* ind, FILE* pf)
         registros = (ftell(pf) / sizeof(t_socio));
 
         ind_insertar(ind, &socio.DNI, registros);
-        //fseek(pf, 0, SEEK_END);
+
         fwrite(&socio, sizeof(t_socio), 1, pf);
 
         printf(GREEN "\n[!] Socio cargado exitosamente.\n" RESET);
@@ -177,7 +177,7 @@ int AltaSocio(t_indice* ind, FILE* pf)
 
     return TODO_OK;
 }
-
+///***********************************************************************************************//
 int pedirDNI(const t_indice* ind, unsigned* dni, FILE* pf)
 {
     unsigned nro_reg;
@@ -211,7 +211,7 @@ int pedirDNI(const t_indice* ind, unsigned* dni, FILE* pf)
 
     return es_valido;
 }
-
+///***********************************************************************************************//
 void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max)
 {
     int es_valido, i;
