@@ -69,10 +69,7 @@ int ind_cargar(t_indice* ind, const char* path)
 
     resultado = CargarArchivoBinenArbolBinBusq(&ind->arbol, path, ind->tamClave, ind->cmp);
 
-    if(resultado == 1)
-        return 1;
-
-    return 0;
+    return resultado;
 }
 //****************************************************************************************************//
 int ind_grabar(const t_indice* ind, const char* path)

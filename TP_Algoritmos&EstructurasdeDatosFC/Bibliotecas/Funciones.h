@@ -22,7 +22,6 @@
 
 ///PATHS DE ARCHIVOS///
 #define PATH_SOCIOS_CSV "Archivos/socios.csv"
-#define PATH_SOCIOS_DAT "Archivos/socios.dat"
 #define PATH_SOCIOS_IDX "Archivos/socios.idx"
 
 ///RANGOS VALIDOS ///
@@ -63,14 +62,15 @@ typedef struct{
 char SeleccionarMenu();
 int CargarSociosenArchivoBinario(const char* path);
 int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int(*cmp)(const void*, const void*));
+int pedirPath(char *dest, size_t tam);
 
 ///FUNCIONE DEL MENU
 int AltaSocio(t_indice* ind, FILE* pf);
 int BajaSocio(t_indice* ind, FILE* pf);
 int listarSociosOrdenados(const t_indice* ind, FILE* pf);
-int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*));
+int modificarSocio(t_indice* ind, FILE* pf);
 int ListarSociosOrdenados(const t_indice* ind, FILE* pf);
-int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path, int(*cmp)(const void*, const void*));
+int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path);
 
 
 ///FUNCIONES NECESARIAS PARA LAS FUNCIONES DEL MENU

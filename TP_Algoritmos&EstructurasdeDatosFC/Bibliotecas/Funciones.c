@@ -20,13 +20,14 @@ char SeleccionarMenu()
         printf(" Seleccione una Opcion: ");
 
         scanf(" %c", &decision);
+
         decision = toupper(decision);
 
         if(strchr(opciones, decision) == NULL)
         {
-            printf(RED "\n Error! Opcion Invalida...\n" RESET);
-            printf(" Presione una tecla para continuar...");
             getchar();
+            printf(RED "\n Error! Opcion Invalida...\n" RESET);
+            printf(" \nPresione una tecla para continuar...");
             getchar();
         }
     }
@@ -279,7 +280,7 @@ void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* minima)
         {
             if (esFechaMenor(fecha, minima))
             {
-                printf("\nError! La fecha de %s no puede ser anterior a la fecha de Nacimiento.", mensaje);
+                printf("\nError! La fecha de %s no puede ser anterior a la fecha de nacimiento o de afiliacion.", mensaje);
                 es_valida = 0;
             }
         }
@@ -442,7 +443,7 @@ int CmpDNI(const void* a, const void* b)
     return 0;
 }
 ///***********************************************************************************************//
-int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
+int modificarSocio(t_indice* ind, FILE* pf)
 {
     t_socio socio;
     t_fecha hoy;
@@ -459,7 +460,7 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
     puts("Ingrese el DNI del socio a modificar: ");
     socio.DNI = validarRango(DNI_MIN, DNI_MAX);
     buscado.clave = &socio.DNI;
-    aux = buscarNodoArbol(&(ind->arbol), &buscado, cmp);
+    aux = buscarNodoArbol(&(ind->arbol), &buscado, ind->cmp);
     if (aux != NULL && *aux != NULL)
     {
         memcpy(&indice, (*aux)->info, (*aux)->tamInfo);
@@ -475,7 +476,7 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
     }
     else
     {
-        printf(RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
+        fprintf(stderr, RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
         return TODO_MAL;
     }
 
@@ -493,16 +494,18 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
         printf(YELLOW " =======================================\n" RESET);
         printf(" Seleccione un campo a modificar: ");
 
-        scanf("%c", &opcion);
+        scanf(" %c", &opcion);
         opcion = toupper(opcion);
 
         switch (opcion)
         {
         case 'A':
+            getchar();
             pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
             break;
 
         case 'B':
+            getchar();
             pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
             break;
 
@@ -516,8 +519,7 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
             break;
 
         case 'E':
-            puts("\nIngrese la nueva fecha de ultima cuota paga: ");
-            socio.fecha_ultima_cuota = validarFecha();
+            pedirFecha("ultima cuota paga", &socio.fecha_ultima_cuota, &socio.fecha_afiliacion);
             break;
 
         case 'S':
@@ -525,9 +527,10 @@ int modificarSocio(t_indice* ind, FILE* pf, int(*cmp)(const void*, const void*))
 
         default:
             printf(RED "\n Error! Opcion Invalida...\n" RESET);
-            printf(" Presione una tecla para continuar...");
             getchar();
-            getchar();;
+            printf(" \nPresione una tecla para continuar...");
+            getchar();
+
         }
 
     }
@@ -679,7 +682,7 @@ int BajaSocio(t_indice* ind, FILE* pf)
     return TODO_OK;
 }
 ///***********************************************************************************************//
-int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path, int(*cmp)(const void*, const void*))
+int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path)
 {
     FILE* pTemp;
     t_socio socio;
@@ -731,7 +734,7 @@ int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path, int(*cmp)(c
     }
 
     ind_vaciar(ind);
-    if(!CargarArchivoBinenArbolBinBusq(&ind->arbol, path, ind->tamClave, cmp))
+    if(!CargarArchivoBinenArbolBinBusq(&ind->arbol, path, ind->tamClave, ind->cmp))
     {
         fprintf(stderr, RED "Error! No se pudo reconstruir el indice.\n" RESET);
         return TODO_MAL;
@@ -743,3 +746,34 @@ int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path, int(*cmp)(c
     return TODO_OK;
 }
 ///***********************************************************************************************//
+
+int pedirPath(char *dest, size_t tam)
+{
+    char buffer[TAM_LINEA];
+    size_t len;
+    FILE *pf;
+
+    printf("Ingrese la ruta completa del archivo: ");
+    if (fgets(buffer, TAM_LINEA, stdin) == NULL)
+    {
+        fprintf(stderr, "Error al leer la ruta.\n");
+        return TODO_MAL;
+    }
+
+    len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n')
+        buffer[len - 1] = '\0';
+
+    // para verificar si existe el archivo o no
+    pf = fopen(buffer, "rb");
+    if (!pf)
+    {
+        fprintf(stderr, "No se encontró el archivo en la ruta: %s\n", buffer);
+        return TODO_MAL; // fallo
+    }
+    fclose(pf);
+
+    strncpy(dest, buffer, tam);
+
+    return TODO_OK;
+}
