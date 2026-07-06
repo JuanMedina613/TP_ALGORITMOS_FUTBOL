@@ -10,8 +10,6 @@ void ind_crear(t_indice* ind, size_t tam_clave, int (*cmp)(const void*, const vo
 //****************************************************************************************************//
 int ind_insertar (t_indice* ind, void *clave, unsigned nro_reg)
 {
-    int res;
-
     t_entrada_indice nue;
     nue.clave = malloc(ind->tamClave);
     if(!nue.clave)
@@ -20,14 +18,14 @@ int ind_insertar (t_indice* ind, void *clave, unsigned nro_reg)
     memcpy(nue.clave, clave, ind->tamClave);
     nue.nro_reg = nro_reg;
 
-    res = insertarArbolBinBusq(&(ind->arbol), &nue, sizeof(t_entrada_indice), ind->cmp);
+    return insertarArbolBinBusq(&(ind->arbol), &nue, sizeof(t_entrada_indice), ind->cmp);
 
-    return res;
 }
 //****************************************************************************************************//
 int ind_eliminar(t_indice* ind, void *clave, unsigned *nro_reg)
 {
     t_entrada_indice buscado;
+
     buscado.clave = clave;
     t_entrada_indice *Encontrado;
 
@@ -67,17 +65,20 @@ int ind_cargar(t_indice* ind, const char* path)
 {
     int resultado;
 
-    resultado = CargarArchivoBinenArbolBinBusq(&ind->arbol, path, ind->tamClave, ind->cmp);
+    resultado = cargarIndiceDesdeArchivo(&ind->arbol,path, ind->tamClave,ind->cmp);
 
     return resultado;
 }
 //****************************************************************************************************//
 int ind_grabar(const t_indice* ind, const char* path)
 {
-    FILE* pf;
-    pf = fopen(path, "wb");
-    if (!pf) return TODO_MAL;
-    recorrerEnOrdenArbol(&ind->arbol,0,pf,AccionGrabar);
+    FILE* pf = fopen(path, "wb");
+    if(!pf)
+        return TODO_MAL;
+
+    if(ind->arbol)
+       recorrerEnOrdenArbol(&(ind->arbol), 0, pf, AccionGrabar);
+
     fclose(pf);
     return TODO_OK;
 }
@@ -89,21 +90,68 @@ void ind_vaciar(t_indice* ind)
 //****************************************************************************************************//
 int ind_recorrer (const t_indice* ind, void (*accion)(void *, unsigned, unsigned, void *), void* param)
 {
-    if(ind->arbol)
-        recorrerEnOrdenArbol(&(ind->arbol),0,param,accion);
-    else
+    if(!(ind->arbol))
         return TODO_MAL;
 
+    recorrerEnOrdenArbol(&(ind->arbol),0,param,accion);
     return TODO_OK;
 }
 //****************************************************************************************************//
 /// FUNCIONES VARIAS
+//****************************************************************************************************/
+int cargarIndiceDesdeArchivo(tArbol* p, const char* path, size_t tamClave, int(*cmp)(const void*,const void*))
+{
+    FILE* pf = fopen(path, "rb");
+    if(!pf)
+        return TODO_MAL;
+
+    t_entrada_indice nueva_entrada;
+
+    size_t tamRegistro = tamClave + sizeof(unsigned);
+    void* bufferLectura = malloc(tamRegistro);
+
+    if(!bufferLectura)
+    {
+        fclose(pf);
+        return TODO_MAL;
+    }
+
+    while(fread(bufferLectura, tamRegistro, 1, pf) == 1)
+    {
+        nueva_entrada.clave = malloc(tamClave);
+        if(!nueva_entrada.clave)
+        {
+            printf("\nError! Sin Memoria al cargar indice\n");
+            free(bufferLectura);
+            fclose(pf);
+            return TODO_MAL;
+        }
+
+        memcpy(nueva_entrada.clave, bufferLectura, tamClave);
+
+        memcpy(&nueva_entrada.nro_reg, (char*)bufferLectura + tamClave, sizeof(unsigned));
+
+        if(!(insertarArbolBinBusq(p, &nueva_entrada, sizeof(t_entrada_indice), cmp)))
+        {
+            printf("\nError! Sin Memoria. Codigo de Error: 912\n");
+            free(nueva_entrada.clave);
+            free(bufferLectura);
+            fclose(pf);
+            return TODO_MAL;
+        }
+    }
+
+    free(bufferLectura);
+    fclose(pf);
+    return TODO_OK;
+}
+//****************************************************************************************************//
 void AccionGrabar(void* info, unsigned tam, unsigned n, void* params)
 {
-    t_entrada_indice entrada;
-    memcpy(&entrada.clave,info,tam);
-    entrada.nro_reg = n;
-    fseek(params, 0 , SEEK_END);
-    fwrite(&entrada,sizeof(t_entrada_indice),1,params);
+    FILE* pf = (FILE*)params;
+    t_entrada_indice* entrada = (t_entrada_indice*)info;
+
+    fwrite(entrada->clave, sizeof(unsigned), 1, pf);
+    fwrite(&entrada->nro_reg, sizeof(unsigned), 1, pf);
 }
 //****************************************************************************************************//

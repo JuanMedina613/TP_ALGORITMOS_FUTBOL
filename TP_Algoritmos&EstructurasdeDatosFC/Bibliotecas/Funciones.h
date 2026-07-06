@@ -15,14 +15,16 @@
 #define YELLOW  "\033[1;33m"
 #define RED     "\033[1;31m"
 #define GREEN   "\033[1;32m"
+#define ORANGE "\x1b[38;5;208m"
 
 #define TAM_LINEA 256
 #define TAM_NYA 60
 #define TAM_CATEGORIA 10
 
 ///PATHS DE ARCHIVOS///
-#define PATH_SOCIOS_CSV "Archivos/socios.csv"
+//#define PATH_SOCIOS_CSV "Archivos/socios.csv"
 #define PATH_SOCIOS_IDX "Archivos/socios.idx"
+#define PATH_SOCIOS_DAT "Archivos/socios.dat"
 
 ///RANGOS VALIDOS ///
 #define DNI_MIN 10000u
@@ -47,7 +49,7 @@ typedef struct{
 }t_fecha;
 
 typedef struct{
-    unsigned DNI;
+    long DNI;
     char apellidos[TAM_NYA + 1];
     char nombres[TAM_NYA + 1];
     t_fecha fecha_nacimiento;
@@ -70,19 +72,19 @@ int BajaSocio(t_indice* ind, FILE* pf);
 int listarSociosOrdenados(const t_indice* ind, FILE* pf);
 int modificarSocio(t_indice* ind, FILE* pf);
 int ListarSociosOrdenados(const t_indice* ind, FILE* pf);
-int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path);
+int CompactarYReindexar(t_indice* ind, FILE* ppf, const char* path);
 
 
 ///FUNCIONES NECESARIAS PARA LAS FUNCIONES DEL MENU
 void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param);
-int pedirDNI(const t_indice* ind, unsigned* dni, FILE* pf);
+int pedirDNI(const t_indice* ind, long* dni, FILE* pf);
 void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max);
 void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* nacimiento);
 void pedirSexo(char* sexo);
 void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* hoy);
 void obtenerFechaActual(t_fecha* hoy);
 int calcularEdad(const t_fecha* nacimiento, const t_fecha* hoy);
-unsigned validarRango(unsigned lim1, unsigned lim2);
+long validarRango(long lim1, long lim2);
 t_fecha validarFecha();
 int esFechaMenor(const t_fecha* f1, const t_fecha* f2);
 int esBisiesto(int anio);

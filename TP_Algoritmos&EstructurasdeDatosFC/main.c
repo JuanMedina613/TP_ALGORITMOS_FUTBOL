@@ -1,17 +1,15 @@
 #include "Bibliotecas/Funciones.h"
 int main()
 {
-    char opcion, PATH_SOCIOS_DAT[TAM_LINEA]="Archivos/socios.dat";
+    char opcion, PATH_SOCIOS_CSV[TAM_LINEA]/*="Archivos/socios.csv"*/;
     t_indice indice;
     FILE *pf;
 
-    /*
-    if (!pedirPath(PATH_SOCIOS_DAT, TAM_LINEA))
+    if (!pedirPath(PATH_SOCIOS_CSV, TAM_LINEA))
     {
             fprintf(stderr, "\nError! Problema al validar la ruta '%s'\n", PATH_SOCIOS_CSV);
             return 1;
     }
-    */
 
     pf = fopen(PATH_SOCIOS_DAT, "r+b");
     if(!pf)
@@ -36,7 +34,7 @@ int main()
 
     ind_crear(&indice, sizeof(unsigned), CmpDNI);
 
-    if(ind_cargar(&indice, PATH_SOCIOS_IDX)!= TODO_OK)
+    if(ind_cargar(&indice, PATH_SOCIOS_IDX) != TODO_OK)
     {
         if(CargarArchivoBinenArbolBinBusq(&indice.arbol, PATH_SOCIOS_DAT, sizeof(unsigned), CmpDNI) != TODO_OK)
         {
@@ -53,8 +51,8 @@ int main()
         switch(opcion)
         {
         case 'A':
-            if(!AltaSocio(&indice, pf))
-                fprintf(stderr, "\nError! Hubo un Problema con la Alta del Socio.\n");
+            AltaSocio(&indice, pf);
+
             break;
 
         case 'B':
@@ -70,7 +68,7 @@ int main()
             break;
 
         case 'C':
-            CompactarYReindexar(&indice, &pf, PATH_SOCIOS_DAT);
+            CompactarYReindexar(&indice, pf, PATH_SOCIOS_DAT);
             break;
         }
 

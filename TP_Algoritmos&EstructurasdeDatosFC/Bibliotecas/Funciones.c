@@ -45,7 +45,7 @@ int CargarSociosenArchivoBinario(const char* path)
     char nuevo[TAM_LINEA];
     t_socio socio;
     char linea[TAM_LINEA];
-    char fecha_auxiliar[11] = "";// PUEDE QUE VENGA VACIO Y HAY QUE CONTROLARLO
+    char fecha_auxiliar[11] = "";
     strcpy(nuevo, path);
     char* punto = strrchr(nuevo, '.');
     if (!punto)
@@ -66,14 +66,14 @@ int CargarSociosenArchivoBinario(const char* path)
     {
 
         sscanf(linea,
-               "%d,%59[^,],%59[^,],"       // DNI, apellidos, nombres
+               "%ld,%59[^,],%59[^,],"       // DNI, apellidos, nombres
                "%d/%d/%d,"                  // fecha_nacimiento
                "%c,"                        // sexo
                "%d/%d/%d,"                  // fecha_afiliacion
                "%9[^,],"                    // categoria
                "%d/%d/%d,"                  // fecha_ultima_cuota
                "%c,"                        // estado
-               "%10[^\n]",                  // fecha_baja (puede ser vacío)
+               "%10[^\n]",                  // fecha_baja
                &socio.DNI,
                socio.apellidos,
                socio.nombres,
@@ -165,7 +165,12 @@ int AltaSocio(t_indice* ind, FILE* pf)
 
         registros = (ftell(pf) / sizeof(t_socio));
 
-        ind_insertar(ind, &socio.DNI, registros);
+        if(ind_insertar(ind, &socio.DNI, registros) == 0)
+        {
+            fprintf(stderr, "\nError! Hubo un Problema con la Alta del Socio.\n");
+            return 0;
+        }
+
 
         fwrite(&socio, sizeof(t_socio), 1, pf);
 
@@ -178,7 +183,7 @@ int AltaSocio(t_indice* ind, FILE* pf)
     return TODO_OK;
 }
 ///***********************************************************************************************//
-int pedirDNI(const t_indice* ind, unsigned* dni, FILE* pf)
+int pedirDNI(const t_indice* ind, long* dni, FILE* pf)
 {
     unsigned nro_reg;
     t_socio socio;
@@ -198,7 +203,7 @@ int pedirDNI(const t_indice* ind, unsigned* dni, FILE* pf)
             socio.estado = 'A';
             fseek(pf, (long int)sizeof(t_socio)*(-1), SEEK_CUR);
             fwrite(&socio, sizeof(t_socio), 1, pf);
-            printf(RED "\nAviso! Socio Inactivo (%s %s- %d) dado de Alta Correctamente." RESET "\n", socio.nombres, socio.apellidos, socio.DNI);
+            printf(RED "\nAviso! Socio Inactivo (%s %s- %ld) dado de Alta Correctamente." RESET "\n", socio.nombres, socio.apellidos, socio.DNI);
         }
         else
             printf( RED "\nError! El DNI ingresado ya pertenece a un Socio Activo." RESET);
@@ -323,14 +328,13 @@ void obtenerFechaActual(t_fecha* hoy)
     hoy->anio = tiempo_local->tm_year + 1900;  // Hay que sumarle 1900 al año
 }
 ///***********************************************************************************************//
-unsigned validarRango(unsigned lim1, unsigned lim2)
+long validarRango(long lim1, long lim2)
 {
-    unsigned dato;
-    do
-    {
-        scanf("%d",&dato);
+    long dato;
+    do{
+        scanf("%ld",&dato);
         if(dato < lim1 || dato > lim2)
-            printf("\nError! Fuera de Rango [%d - %d]... Reingrese:", lim1,lim2);
+            printf("\nError! Fuera de Rango [%ld - %ld]... Reingrese:", lim1,lim2);
     }
     while(dato < lim1 || dato > lim2);
     return dato;
@@ -432,8 +436,8 @@ int CmpDNI(const void* a, const void* b)
     const t_entrada_indice* indice_a = (const t_entrada_indice*)a;
     const t_entrada_indice* indice_b = (const t_entrada_indice*)b;
 
-    unsigned* dni_a = (unsigned*)(indice_a->clave);
-    unsigned* dni_b = (unsigned*)(indice_b->clave);
+    long* dni_a = (long*)(indice_a->clave);
+    long* dni_b = (long*)(indice_b->clave);
 
     if (*dni_a > *dni_b)
         return 1;
@@ -448,35 +452,27 @@ int modificarSocio(t_indice* ind, FILE* pf)
     t_socio socio;
     t_fecha hoy;
     char opcion;
-    tNodoArbol** aux;
-    t_entrada_indice indice;
-    t_entrada_indice buscado;
+    unsigned nro_reg;
+
 
     system("cls");
     printf(CYAN "=========================================\n");
     printf("         MODIFICAR SOCIO\n");
     printf("=========================================\n" RESET);
 
-    puts("Ingrese el DNI del socio a modificar: ");
+    printf("Ingrese el DNI del socio a modificar: ");
     socio.DNI = validarRango(DNI_MIN, DNI_MAX);
-    buscado.clave = &socio.DNI;
-    aux = buscarNodoArbol(&(ind->arbol), &buscado, ind->cmp);
-    if (aux != NULL && *aux != NULL)
+
+    if (ind_buscar(ind, &socio.DNI,&nro_reg))
     {
-        memcpy(&indice, (*aux)->info, (*aux)->tamInfo);
-        fseek(pf, indice.nro_reg * sizeof(t_socio), SEEK_SET);
+        fseek(pf, nro_reg*sizeof(t_socio), SEEK_SET);
         fread(&socio, sizeof(t_socio), 1, pf);
 
-        if (socio.estado == 'B')
-        {
-            fprintf(stderr, RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
-            system("pause");
-            return TODO_MAL;
-        }
     }
     else
     {
-        fprintf(stderr, RED "Error! El DNI ingresado no pertenece a un socio activo.\n" RESET);
+        fprintf(stderr, RED "Error! El DNI ingresado no esta asociado a un socio.\n" RESET);
+        system("pause");
         return TODO_MAL;
     }
 
@@ -484,14 +480,14 @@ int modificarSocio(t_indice* ind, FILE* pf)
     {
         system("cls");
 
-        printf(YELLOW " ================ MENU ================\n" RESET);
+        printf(YELLOW " ================ MENU DE MODIFICACION ================\n" RESET);
         printf(GREEN " [A] " RESET "Apellido.\n");
         printf(GREEN " [B] " RESET "Nombre.\n");
         printf(GREEN " [C] " RESET "Categoria.\n");
         printf(GREEN " [D] " RESET "Sexo.\n");
         printf(GREEN " [E] " RESET "Fecha de ultima cuota paga.\n");
         printf(RED   " [S] " RESET "Salir.\n");
-        printf(YELLOW " =======================================\n" RESET);
+        printf(YELLOW " ======================================================\n" RESET);
         printf(" Seleccione un campo a modificar: ");
 
         scanf(" %c", &opcion);
@@ -502,24 +498,29 @@ int modificarSocio(t_indice* ind, FILE* pf)
         case 'A':
             getchar();
             pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
+            printf("\nAviso! Apellido Modificado Correctamente.");
             break;
 
         case 'B':
             getchar();
             pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
+            printf("\nAviso! Nombre Modificado Correctamente.");
             break;
 
         case 'C':
             obtenerFechaActual(&hoy);
             pedirCategoria(socio.categoria, &socio.fecha_nacimiento, &hoy);
+            printf("\nAviso! Categoria Modificado Correctamente.");
             break;
 
         case 'D':
             pedirSexo(&socio.sexo);
+            printf("\nAviso! Sexo Modificado Correctamente.");
             break;
 
         case 'E':
             pedirFecha("ultima cuota paga", &socio.fecha_ultima_cuota, &socio.fecha_afiliacion);
+            printf("\nAviso! Ultima Cuota Paga Modificado Correctamente.");
             break;
 
         case 'S':
@@ -528,10 +529,10 @@ int modificarSocio(t_indice* ind, FILE* pf)
         default:
             printf(RED "\n Error! Opcion Invalida...\n" RESET);
             getchar();
-            printf(" \nPresione una tecla para continuar...");
             getchar();
-
         }
+        printf("\n");
+        system("pause");
 
     }
     while(opcion != 'S');
@@ -622,7 +623,7 @@ void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param)
 
 void mostrarSocio(const t_socio* socio)
 {
-    printf("\nDNI: %u", socio->DNI);
+    printf("\nDNI: %ld", socio->DNI);
     printf("\nApellido: %s", socio->apellidos);
     printf("\nNombre: %s", socio->nombres);
     printf("\nFecha Nacimiento: %02d/%02d/%04d",
@@ -645,8 +646,8 @@ void mostrarSocio(const t_socio* socio)
 ///***********************************************************************************************//
 int BajaSocio(t_indice* ind, FILE* pf)
 {
-    unsigned DniBuscado,
-             nro_reg,
+    long DniBuscado;
+    unsigned nro_reg,
              RegEliminado;
     t_socio socio;
 
@@ -656,11 +657,11 @@ int BajaSocio(t_indice* ind, FILE* pf)
     printf("=========================================\n" RESET);
 
     printf(YELLOW "Ingrese el DNI del socio a dar de baja: " RESET);
-    DniBuscado = validarRango(10000, 100000000);
+    DniBuscado = validarRango(DNI_MIN, DNI_MAX);
 
     if (ind_buscar(ind, &DniBuscado, &nro_reg) == TODO_MAL)
     {
-        fprintf(stderr, RED "\nError: El socio no existe o ya esta dado de baja.\n" RESET);
+        fprintf(stderr, RED "\nError! El socio no existe o ya esta dado de baja.\n" RESET);
         system("pause");
         return TODO_MAL;
     }
@@ -676,19 +677,19 @@ int BajaSocio(t_indice* ind, FILE* pf)
 
     ind_eliminar(ind, &DniBuscado, &RegEliminado);
 
-    printf(GREEN "\n[!] El socio con DNI %u fue dado de baja exitosamente.\n" RESET, DniBuscado);
+    printf(GREEN "\n[!] El socio con DNI %ld fue dado de baja exitosamente.\n" RESET, DniBuscado);
     system("pause");
 
     return TODO_OK;
 }
 ///***********************************************************************************************//
-int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path)
+int CompactarYReindexar(t_indice* ind, FILE* ppf, const char* path)
 {
     FILE* pTemp;
     t_socio socio;
     char pathTemp[TAM_LINEA];
 
-    if(!ind || !ppf || !*ppf)
+    if(!ind || !ppf)
         return TODO_MAL;
 
     system("cls");
@@ -705,20 +706,20 @@ int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path)
         return TODO_MAL;
     }
 
-    rewind(*ppf);
+    rewind(ppf);
 
-    fread(&socio, sizeof(t_socio), 1, *ppf);
-    while(!feof(*ppf))
+    fread(&socio, sizeof(t_socio), 1, ppf);
+    while(!feof(ppf))
     {
         if(socio.estado != 'B') // se descartan los socios dados de baja
             fwrite(&socio, sizeof(t_socio), 1, pTemp);
 
-        fread(&socio, sizeof(t_socio), 1, *ppf);
+        fread(&socio, sizeof(t_socio), 1, ppf);
     }
 
     fclose(pTemp);
-    fclose(*ppf);
-    *ppf = NULL;
+    fclose(ppf);
+    ppf = NULL;
 
     if(remove(path) != 0 || rename(pathTemp, path) != 0)
     {
@@ -726,14 +727,15 @@ int CompactarYReindexar(t_indice* ind, FILE** ppf, const char* path)
         return TODO_MAL;
     }
 
-    *ppf = fopen(path, "r+b");
-    if(!*ppf)
+    ppf = fopen(path, "r+b");
+    if(!ppf)
     {
         fprintf(stderr, RED "Error! No se pudo reabrir el archivo de datos.\n" RESET);
         return TODO_MAL;
     }
 
     ind_vaciar(ind);
+
     if(!CargarArchivoBinenArbolBinBusq(&ind->arbol, path, ind->tamClave, ind->cmp))
     {
         fprintf(stderr, RED "Error! No se pudo reconstruir el indice.\n" RESET);
@@ -764,15 +766,14 @@ int pedirPath(char *dest, size_t tam)
     if (len > 0 && buffer[len - 1] == '\n')
         buffer[len - 1] = '\0';
 
-    // para verificar si existe el archivo o no
     pf = fopen(buffer, "rb");
     if (!pf)
     {
         fprintf(stderr, "No se encontró el archivo en la ruta: %s\n", buffer);
-        return TODO_MAL; // fallo
+        return TODO_MAL;
     }
-    fclose(pf);
 
+    fclose(pf);
     strncpy(dest, buffer, tam);
 
     return TODO_OK;
