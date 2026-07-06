@@ -144,7 +144,7 @@ int AltaSocio(t_indice* ind, FILE* pf)
     rewind(pf);
 
     estado_condicion = pedirDNI(ind, &socio.DNI, pf);
-    if(estado_condicion == 2)
+    if(estado_condicion == DNI_NUEVO)
     {
         pedirNombreoApellido("Nombres", socio.nombres, sizeof(socio.nombres));
         pedirNombreoApellido("Apellidos", socio.apellidos, sizeof(socio.apellidos));
@@ -209,10 +209,10 @@ int pedirDNI(const t_indice* ind, long* dni, FILE* pf)
             printf( RED "\nError! El DNI ingresado ya pertenece a un Socio Activo." RESET);
 
         system("pause");
-        es_valido = 1;
+        es_valido = DNI_EXISTE;
     }
     else
-        es_valido = 2;
+        es_valido = DNI_NUEVO;
 
     return es_valido;
 }
@@ -605,7 +605,7 @@ int listarSociosOrdenados(const t_indice* ind, FILE* pf)
 
     return TODO_OK;
 }
-
+///***********************************************************************************************//
 void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param)
 {
     t_entrada_indice entrada;
@@ -620,7 +620,7 @@ void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param)
     if (socio.estado != 'B')
         mostrarSocio(&socio);
 }
-
+///***********************************************************************************************//
 void mostrarSocio(const t_socio* socio)
 {
     printf("\nDNI: %ld", socio->DNI);
@@ -641,6 +641,33 @@ void mostrarSocio(const t_socio* socio)
            socio->fecha_ultima_cuota.mes,
            socio->fecha_ultima_cuota.anio);
     printf("\nEstado: %c", socio->estado);
+    printf("\n----------------------------------------\n");
+}
+///***********************************************************************************************//
+void mostrarSocioCompleto(const t_socio* socio)
+{
+    printf("\nDNI: %ld", socio->DNI);
+    printf("\nApellido: %s", socio->apellidos);
+    printf("\nNombre: %s", socio->nombres);
+    printf("\nFecha Nacimiento: %02d/%02d/%04d",
+           socio->fecha_nacimiento.dia,
+           socio->fecha_nacimiento.mes,
+           socio->fecha_nacimiento.anio);
+    printf("\nSexo: %c", socio->sexo);
+    printf("\nFecha Afiliacion: %02d/%02d/%04d",
+           socio->fecha_afiliacion.dia,
+           socio->fecha_afiliacion.mes,
+           socio->fecha_afiliacion.anio);
+    printf("\nCategoria: %s", socio->categoria);
+    printf("\nUltima cuota paga: %02d/%02d/%04d",
+           socio->fecha_ultima_cuota.dia,
+           socio->fecha_ultima_cuota.mes,
+           socio->fecha_ultima_cuota.anio);
+    printf("\nEstado: %c", socio->estado);
+    printf("\nFecha de baja: %02d/%02d/%04d",
+           socio->fecha_baja.dia,
+           socio->fecha_baja.mes,
+           socio->fecha_baja.anio);
     printf("\n----------------------------------------\n");
 }
 ///***********************************************************************************************//
@@ -693,6 +720,9 @@ int CompactarYReindexar(t_indice* ind, FILE* ppf, const char* path)
         return TODO_MAL;
 
     system("cls");
+
+    //LeerArchivoDatos(PATH_SOCIOS_DAT); //Para ver como esta el archivo ANTES de compactar
+
     printf(CYAN "=========================================\n");
     printf("      COMPACTAR Y REINDEXAR\n");
     printf("=========================================\n" RESET);
@@ -745,6 +775,8 @@ int CompactarYReindexar(t_indice* ind, FILE* ppf, const char* path)
     printf(GREEN "\n[!] Compactacion y reindexado realizados exitosamente.\n" RESET);
     system("pause");
 
+    //LeerArchivoDatos(PATH_SOCIOS_DAT); //Para ver como esta el archivo DESPUES de compactar
+
     return TODO_OK;
 }
 ///***********************************************************************************************//
@@ -758,7 +790,6 @@ int pedirPath(char *dest, size_t tam)
     printf("Ingrese la ruta completa del archivo: ");
     if (fgets(buffer, TAM_LINEA, stdin) == NULL)
     {
-        fprintf(stderr, "Error al leer la ruta.\n");
         return TODO_MAL;
     }
 
@@ -769,12 +800,81 @@ int pedirPath(char *dest, size_t tam)
     pf = fopen(buffer, "rb");
     if (!pf)
     {
-        fprintf(stderr, "No se encontró el archivo en la ruta: %s\n", buffer);
         return TODO_MAL;
     }
 
     fclose(pf);
     strncpy(dest, buffer, tam);
 
+    return TODO_OK;
+}
+///***********************************************************************************************//
+int crearArchivoSocios(const char *path)
+{
+    FILE *fp = fopen(path, "wb");
+    if (!fp) {
+        return TODO_MAL;
+    }
+
+    t_socio socios[10] = {
+        {30567891,"Gomez","Juan",{25,8,1975},'M',{14,2,2010},"ADULTO",{10,4,2026},'A',{0,0,0}},
+        {28945612,"Rojas","Kevin",{16,4,2000},'M',{1,3,2021},"JOVEN",{5,5,2026},'A',{0,0,0}},
+        {47891234,"Lopez","Maria",{2,7,1985},'F',{20,9,2012},"ADULTO",{15,6,2026},'A',{0,0,0}},
+        {56789123,"Perez","Carlos",{11,11,1992},'M',{5,5,2018},"ADULTO",{1,7,2026},'A',{0,0,0}},
+        {67891234,"Diaz","Ana",{19,1,1970},'F',{12,12,2005},"ADULTO",{20,5,2026},'I',{0,0,0}},
+        {78912345,"Sanchez","Roberto",{3,3,1963},'M',{8,8,2000},"ADULTO",{10,6,2026},'A',{0,0,0}},
+        {89123456,"Martinez","Laura",{27,9,1999},'F',{15,4,2019},"JOVEN",{25,6,2026},'A',{0,0,0}},
+        {91234567,"Ramirez","Jose",{5,5,1982},'M',{22,7,2011},"ADULTO",{30,6,2026},'A',{0,0,0}},
+        {12345678,"Molina","Camila",{13,12,1995},'F',{10,10,2020},"ADULTO",{2,7,2026},'A',{0,0,0}},
+        {23456789,"Castro","Diego",{21,6,1978},'M',{18,3,2009},"ADULTO",{28,6,2026},'A',{0,0,0}}
+    };
+
+     for (int i = 0; i < 10; i++) {
+        fprintf(fp,"%ld,%s,%s,", socios[i].DNI, socios[i].apellidos, socios[i].nombres);
+        fprintf(fp,"%02d/%02d/%04d,", socios[i].fecha_nacimiento.dia, socios[i].fecha_nacimiento.mes, socios[i].fecha_nacimiento.anio);
+        fprintf(fp,"%c,", socios[i].sexo);
+        fprintf(fp,"%02d/%02d/%04d,", socios[i].fecha_afiliacion.dia, socios[i].fecha_afiliacion.mes, socios[i].fecha_afiliacion.anio);
+        fprintf(fp,"%s,", socios[i].categoria);
+        fprintf(fp,"%02d/%02d/%04d,", socios[i].fecha_ultima_cuota.dia, socios[i].fecha_ultima_cuota.mes, socios[i].fecha_ultima_cuota.anio);
+        fprintf(fp,"%c,", socios[i].estado);
+        fprintf(fp,"%02d/%02d/%04d\n", socios[i].fecha_baja.dia, socios[i].fecha_baja.mes, socios[i].fecha_baja.anio);
+    }
+
+    fclose(fp);
+    printf("Archivo socios.csv generado correctamente.\n");
+    return TODO_OK;
+}
+///***********************************************************************************************//
+
+int LeerArchivoDatos(const char* path)
+{
+    FILE* pf;
+    t_socio socio;
+    unsigned contador = 0;
+
+    pf = fopen(path, "rb");
+    if (!pf)
+    {
+        fprintf(stderr, RED "Error! No se pudo abrir '%s'\n" RESET, path);
+        return TODO_MAL;
+    }
+
+    printf(CYAN "\n========== CONTENIDO CRUDO DE '%s' ==========\n" RESET, path);
+
+    fread(&socio, sizeof(t_socio), 1, pf);
+    while (!feof(pf))
+    {
+        printf(YELLOW "\n[Registro #%u]" RESET, contador);
+        mostrarSocioCompleto(&socio);
+
+        contador++;
+        fread(&socio, sizeof(t_socio), 1, pf);
+    }
+
+    printf(CYAN "\nTotal de registros leidos: %u\n" RESET, contador);
+    printf(CYAN "==============================================\n" RESET);
+    system("pause");
+
+    fclose(pf);
     return TODO_OK;
 }

@@ -121,7 +121,7 @@ int cargarIndiceDesdeArchivo(tArbol* p, const char* path, size_t tamClave, int(*
         nueva_entrada.clave = malloc(tamClave);
         if(!nueva_entrada.clave)
         {
-            printf("\nError! Sin Memoria al cargar indice\n");
+            printf("\nError! Sin Memoria.\n");
             free(bufferLectura);
             fclose(pf);
             return TODO_MAL;
@@ -133,7 +133,7 @@ int cargarIndiceDesdeArchivo(tArbol* p, const char* path, size_t tamClave, int(*
 
         if(!(insertarArbolBinBusq(p, &nueva_entrada, sizeof(t_entrada_indice), cmp)))
         {
-            printf("\nError! Sin Memoria. Codigo de Error: 912\n");
+            printf("\nError! Sin Memoria.\n");
             free(nueva_entrada.clave);
             free(bufferLectura);
             fclose(pf);

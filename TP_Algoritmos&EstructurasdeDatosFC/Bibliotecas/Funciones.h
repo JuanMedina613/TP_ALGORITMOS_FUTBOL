@@ -22,7 +22,6 @@
 #define TAM_CATEGORIA 10
 
 ///PATHS DE ARCHIVOS///
-//#define PATH_SOCIOS_CSV "Archivos/socios.csv"
 #define PATH_SOCIOS_IDX "Archivos/socios.idx"
 #define PATH_SOCIOS_DAT "Archivos/socios.dat"
 
@@ -42,6 +41,9 @@
 #define EDAD_ADULTO_MIN     18
 #define EDAD_VITALICIO_MIN  50
 #define EDAD_JUBILADO_MIN   60
+
+#define DNI_EXISTE   1
+#define DNI_NUEVO    2
 
 ///ESTRUCTURAS///
 typedef struct{
@@ -65,6 +67,8 @@ char SeleccionarMenu();
 int CargarSociosenArchivoBinario(const char* path);
 int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int(*cmp)(const void*, const void*));
 int pedirPath(char *dest, size_t tam);
+int crearArchivoSocios(const char *path);
+int LeerArchivoDatos(const char* path);
 
 ///FUNCIONE DEL MENU
 int AltaSocio(t_indice* ind, FILE* pf);
@@ -94,15 +98,6 @@ void mostrarSocio(const t_socio* socio);
 
 ///CMP DEL INDICE
 int CmpDNI(const void* a, const void* b);
-
-///VALIDACIONES
-
-
-
-
-
-
-
 
 void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param);
 void mostrarSocio(const t_socio* socio);

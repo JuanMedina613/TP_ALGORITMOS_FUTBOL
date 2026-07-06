@@ -1,9 +1,17 @@
 #include "Bibliotecas/Funciones.h"
 int main()
 {
-    char opcion, PATH_SOCIOS_CSV[TAM_LINEA]/*="Archivos/socios.csv"*/;
+    char opcion, PATH_SOCIOS_CSV[TAM_LINEA];
     t_indice indice;
     FILE *pf;
+
+    /// Para crear el archivo csv
+    /*
+    if(crearArchivoSocios("Archivos/socios.csv") != TODO_OK)
+    {
+        fprintf(stderr, "\nError! Problema al crear el archivo 'Archivos/socios.csv'\n");
+        return 1;
+    }*/
 
     if (!pedirPath(PATH_SOCIOS_CSV, TAM_LINEA))
     {
@@ -14,7 +22,6 @@ int main()
     pf = fopen(PATH_SOCIOS_DAT, "r+b");
     if(!pf)
     {
-        // hice un cambio aca, socios.dat no existe todavia. paso el csv una sola vez. Sino, en cada ejecucion  pisariamos todas las altas/bajas ya guardadas y el indice quedaria apuntando a posiciones que ya no existen
 
         if(CargarSociosenArchivoBinario(PATH_SOCIOS_CSV) == TODO_MAL)
         {
@@ -24,19 +31,18 @@ int main()
         printf("\nAviso! Archivo '%s' Cargado Correctamente\n", PATH_SOCIOS_CSV);
 
         pf = fopen(PATH_SOCIOS_DAT, "r+b");
+        if(!pf)
+        {
+            fprintf(stderr, "\nError! No se pudo abrir '%s'\n", PATH_SOCIOS_DAT);
+            return 1;
+        }
     }
 
-    if(!pf)
-    {
-        fprintf(stderr, "\nError! No se pudo abrir '%s'\n", PATH_SOCIOS_DAT);
-        return 1;
-    }
-
-    ind_crear(&indice, sizeof(unsigned), CmpDNI);
+    ind_crear(&indice, sizeof(long), CmpDNI);
 
     if(ind_cargar(&indice, PATH_SOCIOS_IDX) != TODO_OK)
     {
-        if(CargarArchivoBinenArbolBinBusq(&indice.arbol, PATH_SOCIOS_DAT, sizeof(unsigned), CmpDNI) != TODO_OK)
+        if(CargarArchivoBinenArbolBinBusq(&indice.arbol, PATH_SOCIOS_DAT, sizeof(long), CmpDNI) != TODO_OK)
         {
             fprintf(stderr, "\nError! No se pudo construir el indice.\n");
             fclose(pf);

@@ -28,7 +28,6 @@ int ind_grabar(const t_indice* ind, const char* path);
 void ind_vaciar(t_indice* ind);
 int ind_recorrer(const t_indice* ind, void (*accion)(void *, unsigned, unsigned, void *), void* param);
 
-///FUNCIONES VARIAS -> SE PODRIA CREAR OTRO LUGAR PARA PONERLAS
 int cargarIndiceDesdeArchivo(tArbol* p, const char* path, size_t tamClave, int(*cmp)(const void*,const void*));
 void AccionGrabar(void* info, unsigned tam, unsigned n, void* params);
 #endif // INDICE_H_INCLUDED

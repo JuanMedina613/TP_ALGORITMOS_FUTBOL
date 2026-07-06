@@ -30,8 +30,6 @@ void EliminarArbol(tArbol *p);
 
 void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*));
 
-
-///FUNCIONES QUE CREO NECESARIAS
 int insertarArbolBinBusq(tArbol *p, const void *pd, unsigned tam, int(*cmp)(const void*,const void*));
 tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*));
 int eliminarElementoArbol(tArbol *p, const void *pd, unsigned tam, int(*cmp)(const void*, const void*));
