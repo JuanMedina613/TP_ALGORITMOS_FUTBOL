@@ -26,14 +26,12 @@ typedef tNodoArbol* tArbol;
 
 void CrearArbol(tArbol *p);
 void EliminarArbol(tArbol *p);
-
-
-void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*));
-
 int insertarArbolBinBusq(tArbol *p, const void *pd, unsigned tam, int(*cmp)(const void*,const void*));
-tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*));
-int eliminarElementoArbol(tArbol *p, const void *pd, unsigned tam, int(*cmp)(const void*, const void*));
+int eliminarElementoArbol(tArbol *p, void *pd, unsigned tam, int(*cmp)(const void*, const void*));
 int eliminarRaizArbol(tArbol *p);
+void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*));
+int CargarDesdeDatosOrdenados(tArbol* p, void* ds, unsigned (*leer)(void**, void*, unsigned), int li, int ls);
+tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*));
 unsigned alturaArbol(const tArbol *p);
 tNodoArbol **mayorNodoArbol(const tArbol* p);
 tNodoArbol **menorNodoArbol(const tArbol* p);

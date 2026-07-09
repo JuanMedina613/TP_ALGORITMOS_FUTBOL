@@ -17,30 +17,6 @@ void EliminarArbol(tArbol *p)
         *p = NULL;
     }
 }
-//****************************************************************************************************/
-void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*))
-{
-    if(!*p)
-        return;
-    recorrerEnOrdenArbol(&(*p)->izq, n+1, params, Accion);
-    Accion((*p)->info, (*p)->tamInfo, n, params);
-    recorrerEnOrdenArbol(&(*p)->der, n+1, params, Accion);
-}
-//****************************************************************************************************//
-tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*))
-{
-    int rc;
-    if(!*p)
-        return NULL;
-    if(*p && (rc = cmp(pd, (*p)->info)))
-    {
-        if(rc < 0)
-            return buscarNodoArbol(&(*p)->izq,pd,cmp);
-        return buscarNodoArbol(&(*p)->der,pd,cmp);
-    }
-    return (tNodoArbol**)p;
-}
-
 //****************************************************************************************************//
 int insertarArbolBinBusq(tArbol *pa,const void *d,unsigned tam, int (*cmp)(const void *, const void *))
 {
@@ -70,6 +46,16 @@ int insertarArbolBinBusq(tArbol *pa,const void *d,unsigned tam, int (*cmp)(const
 
     return TODO_OK;
 }
+
+//****************************************************************************************************//
+int eliminarElementoArbol(tArbol *p, void *pd, unsigned tam, int(*cmp)(const void*, const void*))
+{
+    if(!(p = buscarNodoArbol(p,pd,cmp)))
+        return TODO_MAL;
+    memcpy(pd, (*p)->info, MINIMO(tam, (*p)->tamInfo));
+    return eliminarRaizArbol(p);
+}
+//****************************************************************************************************/
 int eliminarRaizArbol(tArbol *p)
 {
     if(!*p)
@@ -102,6 +88,52 @@ int eliminarRaizArbol(tArbol *p)
     free(elim);
     return TODO_OK;
 }
+//****************************************************************************************************/
+void recorrerEnOrdenArbol(const tArbol* p,unsigned n, void* params,void(*Accion)(void*, unsigned, unsigned,void*))
+{
+    if(!*p)
+        return;
+    recorrerEnOrdenArbol(&(*p)->izq, n+1, params, Accion);
+    Accion((*p)->info, (*p)->tamInfo, n, params);
+    recorrerEnOrdenArbol(&(*p)->der, n+1, params, Accion);
+}
+//****************************************************************************************************//
+int CargarDesdeDatosOrdenados(tArbol* p, void* ds, unsigned (*leer)(void**, void*, unsigned), int li, int ls)
+{
+    int m = (li + ls)/2,
+         r;
+
+    if(li > ls)
+        return TODO_OK;
+    (*p) = (tNodoArbol*)malloc(sizeof(tNodoArbol));
+
+    if(!*p || !((*p)->tamInfo = leer(&(*p)->info, ds, m)))
+    {
+        free(*p);
+        return SIN_MEM;
+    }
+
+    (*p)->izq = (*p)->der = NULL;
+
+    if((r = CargarDesdeDatosOrdenados(&(*p)->izq, ds, leer, li, m-1)) != TODO_OK)
+        return r;
+    return CargarDesdeDatosOrdenados(&(*p)->der, ds, leer, m+1, ls);
+}
+//****************************************************************************************************//
+tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*))
+{
+    int rc;
+    if(!*p)
+        return NULL;
+    if(*p && (rc = cmp(pd, (*p)->info)))
+    {
+        if(rc < 0)
+            return buscarNodoArbol(&(*p)->izq,pd,cmp);
+        return buscarNodoArbol(&(*p)->der,pd,cmp);
+    }
+    return (tNodoArbol**)p;
+}
+//****************************************************************************************************//
 unsigned alturaArbol(const tArbol *p)
 {
     if(!*p)
@@ -110,6 +142,7 @@ unsigned alturaArbol(const tArbol *p)
     unsigned altD = alturaArbol(&(*p)->der);
     return (altI > altD ? altI : altD) + 1;
 }
+//****************************************************************************************************//
 tNodoArbol **mayorNodoArbol(const tArbol* p)
 {
     if(!*p)
@@ -118,7 +151,7 @@ tNodoArbol **mayorNodoArbol(const tArbol* p)
         p = &(*p)->der;
     return (tNodoArbol**)p;
 }
-
+//****************************************************************************************************//
 tNodoArbol **menorNodoArbol(const tArbol* p)
 {
     if(!*p)
@@ -127,3 +160,4 @@ tNodoArbol **menorNodoArbol(const tArbol* p)
         p = &(*p)->izq;
     return (tNodoArbol**)p;
 }
+//****************************************************************************************************//

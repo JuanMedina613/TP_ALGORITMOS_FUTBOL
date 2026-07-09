@@ -18,28 +18,25 @@ int ind_insertar (t_indice* ind, void *clave, unsigned nro_reg)
     memcpy(nue.clave, clave, ind->tamClave);
     nue.nro_reg = nro_reg;
 
-    return insertarArbolBinBusq(&(ind->arbol), &nue, sizeof(t_entrada_indice), ind->cmp);
-
+    if(!insertarArbolBinBusq(&(ind->arbol), &nue, sizeof(t_entrada_indice), ind->cmp))
+    {
+        free(nue.clave);
+        return TODO_MAL;
+    }
+    return TODO_OK;
 }
 //****************************************************************************************************//
 int ind_eliminar(t_indice* ind, void *clave, unsigned *nro_reg)
 {
-    t_entrada_indice buscado;
+    t_entrada_indice elem;
+    elem.clave = clave;
 
-    buscado.clave = clave;
-    t_entrada_indice *Encontrado;
-
-    tNodoArbol **NodoEliminar = buscarNodoArbol(&(ind->arbol), &buscado, ind->cmp);
-
-    if(NodoEliminar == NULL || *NodoEliminar == NULL)
-        return TODO_MAL;
-
-    Encontrado = (t_entrada_indice*)(*NodoEliminar)->info;
-    *nro_reg = Encontrado->nro_reg;
-
-    free(Encontrado->clave);
-
-    return eliminarRaizArbol(NodoEliminar);
+    if(eliminarElementoArbol(&(ind->arbol), &elem, sizeof(t_entrada_indice), ind->cmp) == TODO_OK)
+    {
+        *nro_reg = elem.nro_reg;
+        return TODO_OK;
+    }
+    return TODO_MAL;
 }
 //****************************************************************************************************//
 int ind_buscar(const t_indice* ind, void *clave, unsigned *nro_reg)
@@ -63,11 +60,18 @@ int ind_buscar(const t_indice* ind, void *clave, unsigned *nro_reg)
 //****************************************************************************************************//
 int ind_cargar(t_indice* ind, const char* path)
 {
-    int resultado;
+    int cantReg, r;
 
-    resultado = cargarIndiceDesdeArchivo(&ind->arbol,path, ind->tamClave,ind->cmp);
+    FILE* pf = fopen(path, "rb");
+    if(!pf)
+        return TODO_MAL;
 
-    return resultado;
+    fseek(pf, 0L, SEEK_END);
+    cantReg = ftell(pf) / (sizeof(unsigned) + ind->tamClave);
+    r = CargarDesdeDatosOrdenados(&ind->arbol, pf, leerParaIndice, 0, cantReg - 1);
+
+    fclose(pf);
+    return r;
 }
 //****************************************************************************************************//
 int ind_grabar(const t_indice* ind, const char* path)
@@ -95,63 +99,5 @@ int ind_recorrer (const t_indice* ind, void (*accion)(void *, unsigned, unsigned
 
     recorrerEnOrdenArbol(&(ind->arbol),0,param,accion);
     return TODO_OK;
-}
-//****************************************************************************************************//
-/// FUNCIONES VARIAS
-//****************************************************************************************************/
-int cargarIndiceDesdeArchivo(tArbol* p, const char* path, size_t tamClave, int(*cmp)(const void*,const void*))
-{
-    FILE* pf = fopen(path, "rb");
-    if(!pf)
-        return TODO_MAL;
-
-    t_entrada_indice nueva_entrada;
-
-    size_t tamRegistro = tamClave + sizeof(unsigned);
-    void* bufferLectura = malloc(tamRegistro);
-
-    if(!bufferLectura)
-    {
-        fclose(pf);
-        return TODO_MAL;
-    }
-
-    while(fread(bufferLectura, tamRegistro, 1, pf) == 1)
-    {
-        nueva_entrada.clave = malloc(tamClave);
-        if(!nueva_entrada.clave)
-        {
-            printf("\nError! Sin Memoria.\n");
-            free(bufferLectura);
-            fclose(pf);
-            return TODO_MAL;
-        }
-
-        memcpy(nueva_entrada.clave, bufferLectura, tamClave);
-
-        memcpy(&nueva_entrada.nro_reg, (char*)bufferLectura + tamClave, sizeof(unsigned));
-
-        if(!(insertarArbolBinBusq(p, &nueva_entrada, sizeof(t_entrada_indice), cmp)))
-        {
-            printf("\nError! Sin Memoria.\n");
-            free(nueva_entrada.clave);
-            free(bufferLectura);
-            fclose(pf);
-            return TODO_MAL;
-        }
-    }
-
-    free(bufferLectura);
-    fclose(pf);
-    return TODO_OK;
-}
-//****************************************************************************************************//
-void AccionGrabar(void* info, unsigned tam, unsigned n, void* params)
-{
-    FILE* pf = (FILE*)params;
-    t_entrada_indice* entrada = (t_entrada_indice*)info;
-
-    fwrite(entrada->clave, sizeof(unsigned), 1, pf);
-    fwrite(&entrada->nro_reg, sizeof(unsigned), 1, pf);
 }
 //****************************************************************************************************//

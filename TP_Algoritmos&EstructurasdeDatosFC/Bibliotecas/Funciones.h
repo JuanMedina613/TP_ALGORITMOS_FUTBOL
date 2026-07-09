@@ -24,7 +24,7 @@
 ///PATHS DE ARCHIVOS///
 #define PATH_SOCIOS_IDX "Archivos/socios.idx"
 #define PATH_SOCIOS_DAT "Archivos/socios.dat"
-
+#define PATH_SOCIOS_CSV "Archivos/socios.csv"
 ///RANGOS VALIDOS ///
 #define DNI_MIN 10000u
 #define DNI_MAX 100000000u
@@ -63,43 +63,53 @@ typedef struct{
     t_fecha fecha_baja;
 }t_socio;
 
+//NECESARIA PARA PODER GRABAR
+typedef struct {
+    long clave;
+    unsigned nro_reg;
+} registro_archivo;
+
+///------------FUNCIONES------------///
 char SeleccionarMenu();
+
 int CargarSociosenArchivoBinario(const char* path);
-int CargarArchivoBinenArbolBinBusq(tArbol* p, const char* path, unsigned tam,int(*cmp)(const void*, const void*));
+int CargarArchivoBinenArbolBinBusq(t_indice* indice, const char* path);
 int pedirPath(char *dest, size_t tam);
 int crearArchivoSocios(const char *path);
-int LeerArchivoDatos(const char* path);
 
 ///FUNCIONE DEL MENU
 int AltaSocio(t_indice* ind, FILE* pf);
 int BajaSocio(t_indice* ind, FILE* pf);
 int listarSociosOrdenados(const t_indice* ind, FILE* pf);
 int modificarSocio(t_indice* ind, FILE* pf);
-int ListarSociosOrdenados(const t_indice* ind, FILE* pf);
 int CompactarYReindexar(t_indice* ind, FILE* ppf, const char* path);
 
 
 ///FUNCIONES NECESARIAS PARA LAS FUNCIONES DEL MENU
 void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param);
+
 int pedirDNI(const t_indice* ind, long* dni, FILE* pf);
 void pedirNombreoApellido(const char* mensaje, char* destino, int tam_max);
 void pedirFecha(const char* mensaje, t_fecha* fecha, t_fecha* nacimiento);
 void pedirSexo(char* sexo);
 void pedirCategoria(char* categoria, const t_fecha* nacimiento, const t_fecha* hoy);
-void obtenerFechaActual(t_fecha* hoy);
-int calcularEdad(const t_fecha* nacimiento, const t_fecha* hoy);
-long validarRango(long lim1, long lim2);
+
 t_fecha validarFecha();
+
+int calcularEdad(const t_fecha* nacimiento, const t_fecha* hoy);
 int esFechaMenor(const t_fecha* f1, const t_fecha* f2);
 int esBisiesto(int anio);
 int diasEnMes(int mes, int anio);
-void mostrarSocio(const t_socio* socio);
+long validarRango(long lim1, long lim2);
+
+void obtenerFechaActual(t_fecha* hoy);
 
 
-///CMP DEL INDICE
+/////////->->->Funciones Necesarias
+int LeerArchivoDatos(const char* path);
 int CmpDNI(const void* a, const void* b);
-
-void mostrarSocioOrdenado(void* info, unsigned tam, unsigned n, void* param);
 void mostrarSocio(const t_socio* socio);
-
+void mostrarSocioCompleto(const t_socio* socio);
+void AccionGrabar(void* info, unsigned tam, unsigned n, void* params);
+unsigned leerParaIndice(void** d, void* pf, unsigned pos);
 #endif // FUNCIONES_H_INCLUDED
