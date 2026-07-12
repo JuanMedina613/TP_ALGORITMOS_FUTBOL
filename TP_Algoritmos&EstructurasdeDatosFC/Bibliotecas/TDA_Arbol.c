@@ -120,6 +120,14 @@ int CargarDesdeDatosOrdenados(tArbol* p, void* ds, unsigned (*leer)(void**, void
     return CargarDesdeDatosOrdenados(&(*p)->der, ds, leer, m+1, ls);
 }
 //****************************************************************************************************//
+int buscarElementoArbol(const tArbol* p, void* pd, unsigned tam, int(*cmp)(const void*, const void*))
+{
+    if(!( p = buscarNodoArbol(p, pd, cmp)))
+        return 0;
+    memcpy(pd, (*p)->info, MINIMO((*p)->tamInfo, tam));
+    return 1;
+}
+//****************************************************************************************************//
 tNodoArbol **buscarNodoArbol(const tArbol *p, const void *pd,int(*cmp)(const void*,const void*))
 {
     int rc;

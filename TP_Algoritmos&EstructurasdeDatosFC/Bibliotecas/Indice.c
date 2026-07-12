@@ -42,18 +42,12 @@ int ind_eliminar(t_indice* ind, void *clave, unsigned *nro_reg)
 int ind_buscar(const t_indice* ind, void *clave, unsigned *nro_reg)
 {
     t_entrada_indice Buscado;
-    t_entrada_indice *Encontrado;
-    tNodoArbol **NodoEncontrado;
-
     Buscado.clave = clave;
 
-    NodoEncontrado = buscarNodoArbol(&(ind->arbol), &Buscado, ind->cmp);
-
-    if(NodoEncontrado == NULL || *NodoEncontrado == NULL)
+    if(buscarElementoArbol(&(ind)->arbol, &Buscado, sizeof(t_entrada_indice), ind->cmp) == TODO_MAL)
         return TODO_MAL;
 
-    Encontrado = (t_entrada_indice*)(*NodoEncontrado)->info;
-    *nro_reg = Encontrado->nro_reg;
+    *nro_reg = Buscado.nro_reg;
 
     return TODO_OK;
 }

@@ -156,7 +156,7 @@ int pedirPath(char *dest, size_t tam)
 ///***********************************************************************************************//
 int crearArchivoSocios(const char *path)
 {
-    FILE *fp = fopen(path, "wb");
+    FILE *fp = fopen(path, "wt");
     if (!fp) {
         return TODO_MAL;
     }
@@ -243,8 +243,7 @@ int AltaSocio(t_indice* ind, FILE* pf)
 int BajaSocio(t_indice* ind, FILE* pf)
 {
     long DniBuscado;
-    unsigned nro_reg,
-             RegEliminado;
+    unsigned nro_reg, RegEliminado;
     t_socio socio;
 
     system("cls");
