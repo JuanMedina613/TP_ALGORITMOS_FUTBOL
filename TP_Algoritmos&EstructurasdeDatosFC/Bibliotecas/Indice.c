@@ -18,7 +18,7 @@ int ind_insertar (t_indice* ind, void *clave, unsigned nro_reg)
     memcpy(nue.clave, clave, ind->tamClave);
     nue.nro_reg = nro_reg;
 
-    if(!insertarArbolBinBusq(&(ind->arbol), &nue, sizeof(t_entrada_indice), ind->cmp))
+    if(insertarArbolBinBusq(&(ind->arbol), &nue, sizeof(t_entrada_indice), ind->cmp) != TODO_OK)
     {
         free(nue.clave);
         return TODO_MAL;
@@ -34,6 +34,7 @@ int ind_eliminar(t_indice* ind, void *clave, unsigned *nro_reg)
     if(eliminarElementoArbol(&(ind->arbol), &elem, sizeof(t_entrada_indice), ind->cmp) == TODO_OK)
     {
         *nro_reg = elem.nro_reg;
+        free(elem.clave);
         return TODO_OK;
     }
     return TODO_MAL;
@@ -81,8 +82,21 @@ int ind_grabar(const t_indice* ind, const char* path)
     return TODO_OK;
 }
 //****************************************************************************************************//
+void liberarClaveIndice (void* info, unsigned tam, unsigned nivel, void* param)
+{
+    t_entrada_indice* entrada = (t_entrada_indice*)info;
+
+    free(entrada->clave);
+    entrada->clave = NULL;
+}
+
 void ind_vaciar(t_indice* ind)
 {
+    if(!ind || !ind->arbol)
+        return;
+
+    recorrerEnOrdenArbol(&ind->arbol,0,NULL,liberarClaveIndice);
+
     EliminarArbol(&ind->arbol);
 }
 //****************************************************************************************************//
